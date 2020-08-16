@@ -1,19 +1,18 @@
 # AICON2
-AICON2: A program for calculating transport properties quickly and accurately
 
-AICON is a program aims to achieve fast and accurate estimation of transport properties, such as electrical conductivity and thermal conductivity. The first version of AICON is specific for lattice thermal conductivity calculation. Based on the [Debye-Callaway model](https://link.aps.org/doi/10.1103/PhysRev.113.1046) for thermal conductivity calculation, we expand this theory and optimize its calculating process. All of these efforts makes this software be able to calculating lattice thermal conductivity quickly and accurately without needing any transcendental parameter. This is especially important for high-throughput calculation. Beside lattice thermal conductivity, one can also obtain other useful information such as contribution rate of acoustic branch and optic branch repectively, scattering rate of different scattering mechanism like normal process and umklapp process. For more information, check out our [article](https://doi.org/10.1016/j.cpc.2019.107074).
+AICON2 is a program aims to achieve fast and accurate estimation of transport properties, such as electrical conductivity and thermal conductivity. The program is able to calculate electronic transport properties based on a [generalized Kane band model and perturbation theory in the framework of relaxation time approximation]( https://doi.org/10.1002/pssb.2220430102) and calculate lattice thermal conductivity based on the [Debye-Callaway model](https://link.aps.org/doi/10.1103/PhysRev.113.1046). We have optimized the original formula in order to achieve highly efficient numerical calculation. All the key input parameters can be calculated using first-principles methods. For more information, check out our [article1](https://doi.org/10.1016/j.cpc.2019.107074) and [article2]().
 
-AICON has a DOI:10.1016/j.cpc.2019.107074, you can cite this code like this:
+AICON2 has a DOI:10.1016/j.cpc.2019.107074, you can cite this code like this:
 
     Tao Fan, Artem R. Oganov, AICON: A program for calculating thermal conductivity quickly and accurately, Comput. Phys. Comm.(2019), 107074, https://doi.org/10.1016/j.cpc.2019.107074
 
 ## prerequisites
-AICON is a Python module. AICON's runtime requirements are Python version 3.5 or higher, and the Python libraries [NumPy](http://www.numpy.org/), [SciPy](https://www.scipy.org/), [spglib](https://atztogo.github.io/spglib/) and [pymatgen](http://pymatgen.org/index.html).  All of them can be easily obtained from the [Python Package Index](https://pypi.python.org/pypi) (PyPI), using tools such as pip. They may also be bundled with Python distributions aimed at scientists, like [Anaconda](https://anaconda.org/), and with a number of Linux distributions. Here we recommend to use Anaconda so that dependencies should be resolved automatically.
+AICON2 is a Python module and requires Python version 3.5 or higher. The dependent Python libraries include [NumPy](http://www.numpy.org/), [SciPy](https://www.scipy.org/), [spglib](https://atztogo.github.io/spglib/), [pymatgen](http://pymatgen.org/index.html) and [atomate](https://atomate.org/) for automatic workflow.  All of them can be easily obtained from the [Python Package Index](https://pypi.python.org/pypi) (PyPI), using tools such as pip. They may also be bundled with Python distributions aimed at scientists, like [Anaconda](https://anaconda.org/), and with a number of Linux distributions. Here we recommend to use Anaconda so that dependencies should be resolved automatically.
 
-## Compiling and install AICON
+## Compiling and install AICON2
 Users installing from source must install the dependencies first and then run:
 
     $ python setup.py install
     
 ## Running the tests
-The distribution includes four examples: diamond, Si, SnSe, Mg2Si. The former three examples are also described in the AICON [paper](https://doi.org/10.1016/j.cpc.2019.107074). Read /doc/UserManual to learn how to use this software and more information about the output files.
+The distribution includes seven examples. Among them, diamond, Si, SnSe_phon, Mg2Si are for lattice thermal conductivity, while PbTe, SnSe_elect and Bi2Te3 are for electronic transport properties. Those examples are also described in the [paper](https://doi.org/10.1016/j.cpc.2019.107074) and [papar](). Read /doc/UserManual to learn how to use this software and more information about the output files.
