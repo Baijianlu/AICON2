@@ -8,7 +8,7 @@ import os
 import numpy as np
 from pymatgen.io.vasp import BSVasprun
 from pymatgen.electronic_structure.core import Spin
-from myprocesscontrol.band import Band
+from aicon.band import Band
 import scipy.constants
 import pandas as pd
 
@@ -22,6 +22,25 @@ def Get_transport(band, filepath):
     band.Get_hallcoeff(filepath)
 
 def find_mu_doping(band, doping, mu, Temp):
+    '''
+    Find the reduced chemical potential corresponding to the given carrier concentration.
+    For carrier from one band.
+    
+    Parameters
+    ----------
+    band: Band object
+    doping: float
+        The specified carrier concentration, in the unit of cm-3.
+    mu: list
+        The list of chemical potential, unit is eV. Should have default values.
+    Temp: list
+        The list of Temperature, unit is K.
+        
+    Returns
+    -------
+    mu_x: list
+        The list of reduced chemical potential corresponding to given doping level and temperature.
+    '''
     mu_x = np.zeros((len(Temp), len(doping)))
     delta = np.zeros((len(doping), len(mu)))
     
@@ -37,12 +56,31 @@ def find_mu_doping(band, doping, mu, Temp):
     return mu_x
 
 def find_mu_doping2(band1, band2, doping, mu, Temp):
+    '''
+    Find the reduced chemical potential corresponding to the given carrier concentration.
+    For carrier from two bands.
+    
+    Parameters
+    ----------
+    band: Band object
+    doping: float
+        The specified carrier concentration, in the unit of cm-3.
+    mu: list
+        The list of chemical potential, unit is eV. Should have default values.
+    Temp: list
+        The list of Temperature, unit is K.
+        
+    Returns
+    -------
+    mu_x: list
+        The list of reduced chemical potential corresponding to given doping level and temperature.    
+    '''
     mu_x = np.zeros((len(Temp), len(doping)))
     delta = np.zeros((len(doping), len(mu)))
     
     for i, T in enumerate(Temp):
         X = mu / (EBoltzm * T)
-        gap = (band2.bandgap - band1.bandgap)/(EBoltzm*T)                    #0.1133
+        gap = (band2.bandgap - band1.bandgap)/(EBoltzm*T)                    
         for j, x in enumerate(X):
             N_1 = band1.Density(x, T) / 1e6
             N_2 = band2.Density(x - gap, T) / 1e6
@@ -54,13 +92,17 @@ def find_mu_doping2(band1, band2, doping, mu, Temp):
     return mu_x
 
 class Electron(object):
-    '''This is a class includes all electron related properties'''
+    '''Electronic transport properties calculation class'''
     def Get_bandstru(self, filepath):
+        '''Obtain band structure'''
+        
         vaspband = BSVasprun(filepath + "/vasprun.xml")
         self.engband = vaspband.get_band_structure(kpoints_filename=filepath+"/KPOINTS",line_mode=True)
         self.bandgap = self.engband.get_band_gap()['energy']
     
     def Get_CBM(self):
+        '''Find CBM and instantiate a Band object'''
+        
         coord = self.engband.get_cbm()['kpoint'].frac_coords
         deg = self.engband.get_kpoint_degeneracy(coord)
         cbmbnd = np.min(self.engband.get_cbm()['band_index'][Spin.up])
@@ -68,6 +110,8 @@ class Electron(object):
         self.CBM = Band(self.bandgap, deg, isCBM = True, bndindex=cbmbnd, kptindex=cbmkpt)
         
     def Get_VBM(self):
+        '''Find VBM and instantiate a Band object'''
+        
         coord = self.engband.get_vbm()['kpoint'].frac_coords
         deg = self.engband.get_kpoint_degeneracy(coord)
         vbmbnd = np.max(self.engband.get_vbm()['band_index'][Spin.up])
@@ -75,6 +119,8 @@ class Electron(object):
         self.VBM = Band(self.bandgap, deg, isVBM = True, bndindex=vbmbnd, kptindex=vbmkpt)
         
     def Get_SB(self):
+        '''Find CSB and VSB, then instantiate a Band object'''
+        
         CSB_list = list()
         VSB_list = list()
         cbmbnd = np.min(self.engband.get_cbm()['band_index'][Spin.up])
@@ -99,8 +145,7 @@ class Electron(object):
                 if (self.engband.bands[Spin.up][vbmbnd,i] >= self.engband.bands[Spin.up][vbmbnd,i-1]) and (self.engband.bands[Spin.up][vbmbnd,i] >= self.engband.bands[Spin.up][vbmbnd,i+1]) and (np.abs(vbmeng - self.engband.bands[Spin.up][vbmbnd,i]) < 0.2):
                     if i not in self.engband.get_vbm()['kpoint_index']:
                         VSB_list.append(i)                
-#        print(CSB_list)
-#        print(VSB_list)
+
         CSB = None
         VSB = None
         if len(CSB_list) != 0:
@@ -122,10 +167,30 @@ class Electron(object):
         if VSB is not None:
             coord = self.engband.kpoints[VSB].frac_coords
             deg = self.engband.get_kpoint_degeneracy(coord)
-            self.VSB = Band(self.bandgap + np.abs(self.engband.bands[Spin.up][vbmbnd,VSB] - vbmeng), deg, isVSB = True, bndindex=vbmbnd, kptindex=VSB)
-#            self.VSB = Band(self.bandgap + 0.06, deg, isSB = True, bndindex=vbmbnd, kptindex=VSB)      
+            self.VSB = Band(self.bandgap + np.abs(self.engband.bands[Spin.up][vbmbnd,VSB] - vbmeng), deg, isVSB = True, bndindex=vbmbnd, kptindex=VSB)     
 
     def Get_values(self, filepath, Temp, doping, mode, ifSB=True):
+        '''
+        Calculate electronic transport properties. The results are either a function of chemical potential and temperature or a function of 
+        carrier concentration and temperature.
+        
+        Parameters:
+        ----------
+        filepath: str
+            
+        Temp: list
+            The specified temperatures, the unit is K.
+        doping: list
+            The specified carrier concentration, the unit is cm-3. Used in 'doping' mode.
+        mode: str
+            either 'standard' or 'doping'. In standard mode, the results are a function of chemical potential and temperature, while in 
+            doping mode, the results are a function of specified carrier concentration and temperature.
+        ifSB: bool
+            if the second bands (CSB or VSB) are included in the calculation. Sometimes users may not want to consider them in the calculation 
+            even they exist. The default value is True.
+            
+        The results are stored in the self.data attribute.
+        '''
         self.data = dict()
         self.data['CBM'] = dict()
         self.data['VBM'] = dict()
@@ -135,7 +200,7 @@ class Electron(object):
         self.data['TVB'] = dict()
         
         if mode == 'standard':
-            mu = np.arange(-self.bandgap/2, -self.bandgap/2 + 1.0, 0.002)       #start from the middle of the gap to 1.5eV higher place
+            mu = np.arange(-self.bandgap/2, -self.bandgap/2 + 1.0, 0.002)                #start from the middle of the gap to 1.0 eV higher place, with the stepsize 0.002 eV.
             self.mu = mu
             self.data['CBM']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
             self.data['CBM']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
@@ -168,6 +233,7 @@ class Electron(object):
                 self.Get_SB()
             Get_transport(self.CBM, filepath)
             Get_transport(self.VBM, filepath)
+            
             if hasattr(self, 'CSB'):
                 self.data['CSB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
                 self.data['CSB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
@@ -195,6 +261,7 @@ class Electron(object):
                 self.data['TCB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
                 Get_transport(self.CSB, filepath)
                 gap_csb = self.CSB.bandgap - self.CBM.bandgap
+                
             if hasattr(self, 'VSB'):
                 self.data['VSB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
                 self.data['VSB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
@@ -222,6 +289,7 @@ class Electron(object):
                 self.data['TVB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))  
                 Get_transport(self.VSB, filepath)
                 gap_vsb = self.VSB.bandgap - self.VBM.bandgap
+                
             for i, T in enumerate(Temp):
                 mu_x = mu / (EBoltzm * T)
                 for j, x in enumerate(mu_x):
@@ -464,9 +532,12 @@ class Electron(object):
                         self.data['TVB']['Hallcoeff'][i,j] = (self.VBM.Hallcoeff.A(vmu_x[i,j], T) * self.data['VBM']['Mobility'][i,j] * self.data['VBM']['Elcond'][i,j] + self.VSB.Hallcoeff.A(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T) * self.data['VSB']['Mobility'][i,j] * self.data['VSB']['Elcond'][i,j]) \
                                                              / (self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Elcond'][i,j])**2
                         self.data['TVB']['PF'][i,j] = self.data['TVB']['Seebeck'][i,j]**2 * self.data['TVB']['Elcond'][i,j]
-####################################################################################                    
+#####################################################################################################################################################################                    
     def Output(self, Temp, doping, mode):
-        
+        ''' 
+        Output the results as any file format users want. The results are firstly converted to a pandas.DataFrame object, so users can store it as any file
+        format pandas supports. Also, the key parameters for each band are stored in Parameter file for checking. 
+        '''
         shape = np.shape(self.data['CBM']['TotalRelaxT'])
         Temp_list = np.array([])
         
