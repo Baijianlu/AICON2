@@ -17,23 +17,30 @@ def Upperlimit(x):
         return x + 100
 
 class Seebeck(object):
-    '''This is a class for seebeck coefficient'''
+    '''Seebeck coefficient class'''
+    
     def __init__(self, flag, RelaxTime):
         self.value = 0.0
         self.flag = flag
         self.RelaxT = RelaxTime
         
-    def Get_seebeck_NP(self):        
+    def Get_seebeck_NP(self):
+        ''' Calculate Seebeck coefficient with non-parabolic approximation. '''
+        
         fun1 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (z - x) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
         fun2 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
         self.seebeck = lambda x, T: Boltzm / C_e * quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
 
     def Get_seebeck_P(self):
+        ''' Calculate Seebeck coefficient with parabolic approximation. '''
+        
         fun1 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (z - x) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 
         fun2 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 
         self.seebeck = lambda x, T: Boltzm / C_e * quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]        
 
     def Get_seebeck(self, ACO = True, ACO_P = False, OPT = False, OPT_P = False, IMP = False, IMP_P = False):
+        ''' '''
+        
         fun1 = lambda z, T: 0
         fun2 = lambda z, T: 0
         fun3 = lambda z, T: 0
@@ -57,9 +64,4 @@ class Seebeck(object):
         else:
             self.Get_seebeck_NP()
         
-        
-        
-        
-        
-        
-        
+               
