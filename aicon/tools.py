@@ -3,7 +3,6 @@
 Created on Mon May 18 15:01:06 2020
 
 @author: Tao.Fan
-
 """
 import os
 import numpy as np
@@ -24,11 +23,19 @@ MassFluct = {'H':1.1460e-4, 'He':8.3232e-8, 'Li':14.58e-4, 'Be':0.0, 'B':13.54e-
              'Ta':3.80667e-09, 'W':6.9669e-05, 'Re':2.7084e-05,'Os':7.4520e-05, 'Ir':2.5378e-05, 'Pt':3.39199e-05, 'Au':0.0, 'Hg':6.5260e-05, 'Tl':1.99668e-05, 'Pb':1.94476e-05, 'Bi':0.0}
     
 def Generate_kpoints(struct, kppa):
+    ''' 
+    Gererate KPOINTS file with desired grid resolution.
+    
+    Parameters:
+    ----------
+    struct: pmg.structure object
+    kppa: float
+        The grid resolution in the reciprocal space, the unit is A-1. 
+    '''
+    
     comment = "Kpoints with grid resolution = %.3f / A-1" % (kppa)
     recip_lattice = np.array(struct.lattice.reciprocal_lattice.abc)/(2*np.pi)
     num_div = [int(round(l / kppa)) for l in recip_lattice]
-
-
     # ensure that numDiv[i] > 0
     num_div = [i if i > 0 else 1 for i in num_div]
     # VASP documentation recommends to use even grids for n <= 8 and odd
@@ -41,8 +48,9 @@ def Generate_kpoints(struct, kppa):
     return Kpoints(comment, num_kpts, style, [num_div], [0, 0, 0])
 
 def get_highsympath(filename):
-    '''Get the high symmetry path of phonon spectrum '''
-    struct = pmg.Structure.from_file(filename)       #here should be changed
+    ''' Get the high symmetry path of phonon spectrum. '''
+    
+    struct = pmg.Structure.from_file(filename)       
     finder = SpacegroupAnalyzer(struct)
     prims = finder.get_primitive_standard_structure()
     HKpath = HighSymmKpath(struct)
@@ -58,7 +66,7 @@ def get_highsympath(filename):
     Coordslist = list()
     
     for i in np.arange(len(Keys) - 1):
-        if (count-1)%3 == 0:                    #count-1 can be intergely divided by 3
+        if (count-1)%3 == 0:                                                          #count-1 can be intergely divided by 3
             Keylist.append(Keys[0])
             Coordslist.append(Coords[0])
             count+=1
@@ -94,6 +102,7 @@ def pbc_diff(fcoords1, fcoords2):
     
 def get_sym_eq_kpoints(struct, kpoint, cartesian=False, tol=1e-2):
     '''Get the symmetry equivalent kpoints list'''
+    
     if not struct:
         return None
     
@@ -111,8 +120,9 @@ def get_sym_eq_kpoints(struct, kpoint, cartesian=False, tol=1e-2):
     return np.delete(points, rm_list, axis=0)
 
 def get_highsymweight(filename):
-    '''Get the symmetry equivalent kpoints of specified kpoint '''
-    struct = pmg.Structure.from_file(filename)       #here should be changed
+    ''' Get the multiplicity of the high symmetry path. '''
+    
+    struct = pmg.Structure.from_file(filename)       
     HKpath = HighSymmKpath(struct)
     Keys = list()
     Coords = list()
@@ -130,7 +140,8 @@ def get_highsymweight(filename):
     return Keys, Coords, Kweight
 
 def extract_GV(filepath):
-    '''Extract frequency and group velocity information '''
+    '''Extract frequency and group velocity information. '''
+    
     fp1 = open(filepath + 'band.yaml','r')
 
     keystr1 = "q-position"
@@ -191,7 +202,8 @@ def extract_GV(filepath):
     return GroupVec,Frequency,Gamma
 
 def extract_GrunP(filepath, nbands=9, npoints=255):
-    '''Extract gruneisen parameters information '''
+    '''Extract gruneisen parameters information. '''
+    
     fp1 = open(filepath + 'gruneisen.yaml','r')
 
     keystr1 = "q-position"
@@ -234,7 +246,8 @@ def extract_GrunP(filepath, nbands=9, npoints=255):
     return Pathpot, GruneisenPara
 
 def calc_MGV(filepath,weight):
-    '''Calculate branch velocity and frequency '''    
+    '''Calculate branch velocity and frequency. '''
+    
     (GroupVec,Frequency,Gamma) = extract_GV(filepath)
     Gamma_index = np.zeros((len(Gamma),2))          
     Bandnum = GroupVec.shape[1] - 1
@@ -305,7 +318,8 @@ def calc_MGV(filepath,weight):
     return branch_vel,branch_freq,branch_DebyeT,Optic_base
 
 def calc_MGP(filepath,weight):                                     #Gamma:the position of Gamma, weight:multiplicity of Gamma points
-    '''Calculate branch gruneisen parameters'''
+    '''Calculate branch gruneisen parameters.'''
+    
     (GroupVec,Freq,Gamma) = extract_GV(filepath)
     Gamma_index = np.zeros((len(Gamma),2))          
     Bandnum = GroupVec.shape[1] - 1                 
@@ -346,8 +360,10 @@ def calc_MGP(filepath,weight):                                     #Gamma:the po
     return branch_grun
 
 def Get_GVD(filepath):
-    '''This function is used for obtaining the Gruneisen parameter, group velocity and Debye temperature for kappa calculation, 
-    they are all four dimension including three acoustic branches and one "representive" optic branch.'''
+    '''
+    This function is used for obtaining the Gruneisen parameter, group velocity and Debye temperature for kappa calculation, 
+    they are all four dimension including three acoustic branches and one "representive" optic branch.
+    '''
     gruneisen = np.zeros(4)
     velocity = np.zeros(4)
     DebyeT = np.zeros(4)
@@ -377,6 +393,7 @@ def Get_GVD(filepath):
     return gruneisen, velocity, DebyeT, freq, Optic_base
 
 def calc_MFPS(Elem_tabl):
+    '''Calculate mass fluctuation phonon scattering parameter. '''
     
     tab_len  = len(Elem_tabl)
     Mass = [pmg.Element[Elem_tabl[i]].atomic_mass for i in np.arange(tab_len)]
@@ -391,7 +408,7 @@ def calc_MFPS(Elem_tabl):
     return MFPS
 
 def Write_INPCAR(coord, step_size, bnd_num, prg, lattice):
-    """ """
+    ''' '''
     fp = open('INPCAR','w')
     fp.write('%.6f %.6f %.6f%s' % (coord[0], coord[1], coord[2], os.linesep))
     fp.write('%f%s' % (step_size, os.linesep))
