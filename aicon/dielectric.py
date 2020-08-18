@@ -10,7 +10,7 @@ import scipy.constants
 epsilon_0 = scipy.constants.epsilon_0
 
 class DielConst(object):
-    ''' this class is used to calculate dielectric constant and store the data'''
+    ''' Dielectric constant class'''
     
     def __init__(self):
         self.electron = 0.0
@@ -34,5 +34,5 @@ class DielConst(object):
         self.electron = np.average(np.linalg.eig(self.electensor)[0]) * epsilon_0
         self.ion = np.average(np.linalg.eig(self.iontensor)[0]) * epsilon_0
         self.static = self.electron + self.ion
-        return self.electron, self.ion
+        
         
