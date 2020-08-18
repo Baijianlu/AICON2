@@ -14,7 +14,7 @@ from atomate.vasp.firetasks.glue_tasks import CopyVaspOutputs, pass_vasp_result
 from atomate.vasp.firetasks.parse_outputs import VaspToDb
 from atomate.vasp.firetasks.run_calc import RunVaspCustodian, RunVaspDirect
 from atomate.vasp.firetasks.write_inputs import WriteVaspFromIOSet
-from myprocesscontrol.myfiretasks import CheckOptimization, WriteVaspStaticFromPrev, WriteVaspNSCFFromPrev, \
+from aicon.myfiretasks import CheckOptimization, WriteVaspStaticFromPrev, WriteVaspNSCFFromPrev, \
     WriteEMCInput, WriteVaspForDeformedCrystal, BuildAICONDir, RunAICONForElec, WritePhononBand, \
     BuildPhonopyDir, RunAICONForPhon, WriteSupercellWithDisp
 
@@ -56,7 +56,6 @@ class MyOptimizeFW(Firework):
             parents ([Firework]): Parents of this particular Firework.
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
-#        vasp_input_set = vasp_input_set or MPRelaxSet(structure)
 
         t = []
         if parents and prev_calc_loc:
@@ -64,11 +63,10 @@ class MyOptimizeFW(Firework):
             t.append(WriteVaspForDeformedCrystal(strain=strain, user_incar_settings=vasp_input_set_params))    
         else:
             t.append(WriteVaspFromIOSet(structure=structure, vasp_input_set=vasp_input_set))
-#        t.append(RunVaspDirect(vasp_cmd=vasp_cmd, expand_vars=True))
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, job_type=job_type, auto_npar=auto_npar, gzip_output=False))
-#        t.append(PassCalcLocs(name="{}-{}".format(name, str(count))))
         t.append(CheckOptimization(vasp_input_set=vasp_input_set, vasp_input_set_params=vasp_input_set_params, 
                                    vasp_cmd=vasp_cmd, db_file=db_file, name=name, count=count, kwargs=kwargs))
+        
         super(MyOptimizeFW, self).__init__(t, parents=parents, name="{}-{}-{}".
                                          format(structure.composition.reduced_formula, name, str(count)),
                                          **kwargs)
@@ -101,6 +99,7 @@ class MyStaticFW(Firework):
             vasptodb_kwargs (dict): kwargs to pass to VaspToDb
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         t = []
 
         vasp_input_set_params = vasp_input_set_params or {}
@@ -128,8 +127,6 @@ class MyStaticFW(Firework):
 
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, auto_npar=">>auto_npar<<", gzip_output=False))
         t.append(PassCalcLocs(name=name))
-#        t.append(
-#            VaspToDb(db_file=db_file, **vasptodb_kwargs))
         super(MyStaticFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
 
@@ -156,6 +153,7 @@ class MyNonSCFFW(Firework):
             vasp_input_set_params (dict): Parameters in INCAR to override.
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         vasp_input_set_params = vasp_input_set_params or {}
 
         fw_name = "{}-{} {}".format(structure.composition.reduced_formula if
@@ -179,10 +177,6 @@ class MyNonSCFFW(Firework):
 
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, auto_npar=">>auto_npar<<", gzip_output=False))
         t.append(PassCalcLocs(name=name))
-#        t.append(VaspToDb(db_file=db_file,
-#                          additional_fields={"task_label": name + " " + mode},
-#                          parse_dos=(mode == "uniform"),
-#                          bandstructure_mode=mode))
 
         super(MyNonSCFFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
@@ -213,6 +207,7 @@ class MyDFPTFW(Firework):
                 next firework can use it.
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         name = "dielectric" if lepsilon else "phonon"
 
         fw_name = "{}-{}".format(structure.composition.reduced_formula if structure else "unknown", name)
@@ -243,7 +238,6 @@ class MyDFPTFW(Firework):
                                       mod_spec_key="normalmodes"))
 
         t.append(PassCalcLocs(name=name))
-#        t.append(VaspToDb(db_file=db_file, additional_fields={"task_label": name}))
 
         super(MyDFPTFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
@@ -272,6 +266,7 @@ class MyElasticFW(Firework):
             vasptodb_kwargs (dict): kwargs to pass to VaspToDb
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         t = []
 
         vasp_input_set_params = vasp_input_set_params or {}
@@ -299,6 +294,7 @@ class MyElasticFW(Firework):
 
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, auto_npar=">>auto_npar<<", gzip_output=False))
         t.append(PassCalcLocs(name=name))
+        
         super(MyElasticFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
 
@@ -325,6 +321,7 @@ class MyEffectivemassFW(Firework):
             vasp_input_set_params (dict): Parameters in INCAR to override.
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         vasp_input_set_params = vasp_input_set_params or {}
 
         fw_name = "{}-{} {}".format(structure.composition.reduced_formula if
@@ -347,10 +344,6 @@ class MyEffectivemassFW(Firework):
         t.append(WriteEMCInput(bnd_name=whichbnd, calc_loc='equi nscf', step_size=stepsize))
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, auto_npar=">>auto_npar<<", gzip_output=False))
         t.append(PassCalcLocs(name=whichbnd))
-#        t.append(VaspToDb(db_file=db_file,
-#                          additional_fields={"task_label": name + " " + mode},
-#                          parse_dos=(mode == "uniform"),
-#                          bandstructure_mode=mode))
 
         super(MyEffectivemassFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
@@ -373,6 +366,7 @@ class CalElecCondFW(Firework):
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
             
         """
+        
         fw_name = "{}-{}".format(structure.composition.reduced_formula if structure else "unknown", name)
         t = []
         
@@ -406,6 +400,7 @@ class MyPhononFW(Firework):
             supercell (list) size of supercell: 
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         fw_name = "{}-{}".format(structure.composition.reduced_formula if structure else "unknown", name)
         t = []
 
@@ -425,7 +420,6 @@ class MyPhononFW(Firework):
         t.append(RunVaspCustodian(vasp_cmd=vasp_cmd, gzip_output=False))
         t.append(WritePhononBand(supercell=supercell))
         t.append(PassCalcLocs(name=name))
-#        t.append(VaspToDb(db_file=db_file, additional_fields={"task_label": name}))
 
         super(MyPhononFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
 
@@ -446,6 +440,7 @@ class CalPhonCondFW(Firework):
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
             
         """
+        
         fw_name = "{}-{}".format(structure.composition.reduced_formula if structure else "unknown", name)
         t = []
         
@@ -479,6 +474,7 @@ class MyPhononFiniteDiffFW(Firework):
             supercell (list) size of supercell: 
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
         """
+        
         fw_name = "{}-{}".format(structure.composition.reduced_formula if structure else "unknown", name)
         t = []
 
@@ -497,6 +493,9 @@ class MyPhononFiniteDiffFW(Firework):
 
         t.append(WriteSupercellWithDisp(supercell=supercell))
         t.append(PassCalcLocs(name=name))
-#        t.append(VaspToDb(db_file=db_file, additional_fields={"task_label": name}))
 
         super(MyPhononFiniteDiffFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)
+        
+        
+        
+        
