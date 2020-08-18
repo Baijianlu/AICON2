@@ -17,13 +17,18 @@ def Upperlimit(x):
         return x + 100
     
 class Ekappa(object):
-    '''This is a class for electronic thermal conductivity'''
+    '''Electronic thermal conductivity class'''
+    
     def __init__(self, flag, RelaxTime):
         self.value = 0.0
         self.flag = flag
         self.RelaxT = RelaxTime
         
-    def Get_lorenz_NP(self):        
+    def Get_lorenz_NP(self):
+        '''
+        Calculate Lorenz number with non-parabolic approximation.
+        '''
+        
         fun1 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * z**2 * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
         fun2 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
         fun3 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * z * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
@@ -31,6 +36,10 @@ class Ekappa(object):
                                     (quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0])**2)
 
     def Get_lorenz_P(self):
+        '''
+        Calculate Lorenz number with parabolic approximation.
+        '''
+        
         fun1 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * z**2 * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 
         fun2 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3
         fun3 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * z * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3
@@ -38,6 +47,18 @@ class Ekappa(object):
                                     (quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0])**2)        
 
     def Get_ekappa(self, elcond, ACO = True, ACO_P = False, OPT = False, OPT_P = False, IMP = False, IMP_P = False):
+        '''
+        Calculate electronic thermal conductivity.
+        
+        Parameters:
+        ----------
+        elcond: function
+            The electical conductivity function.
+        ACO: bool
+            If consider the acoustic phonon scattering in total relaxation time.
+        ACO_P: bool
+            If consider the acoustic phonon scattering with parabolic approximation in total relaxation time.
+        '''
         fun1 = lambda z, T: 0
         fun2 = lambda z, T: 0
         fun3 = lambda z, T: 0
