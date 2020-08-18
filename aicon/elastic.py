@@ -10,7 +10,7 @@ import pymatgen as pmg
 from pymatgen.io.vasp import Outcar
 
 class ElasticConst(object):
-    ''' this class is used to calculate elastic constant and store the data'''
+    ''' Elastic constant class. '''
     
     def __init__(self):
         self.value = 0.0
