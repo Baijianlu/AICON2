@@ -51,13 +51,10 @@ class CheckOptimization(FiretaskBase):
         else:
             if len(OSZICAR.ionic_steps) == 1:
                 new_name = "{}-{}".format(self.get("name"), "final")
-                fp.write("%s\n" % new_name)
                 calc_locs = list(fw_spec.get("calc_locs", []))
                 calc_locs.append({"name": new_name,
                                   "filesystem": env_chk(self.get('filesystem', None), fw_spec),
                                   "path": self.get("path", os.getcwd())})
-                fp.write("%s\n" % calc_locs[0]["path"])
-                fp.close()
                 return FWAction(mod_spec=[{'_push_all': {'calc_locs': calc_locs}}])
             else:
                 stru = Structure.from_file("CONTCAR")
