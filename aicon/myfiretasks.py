@@ -7,7 +7,6 @@ Created on Fri Jun  5 16:38:37 2020
 import os
 import numpy as np
 from fireworks import explicit_serialize, FiretaskBase, FWAction
-#from myfireworks import MyOptimizeFW
 from pymatgen import Structure
 from pymatgen.io.vasp.inputs import Incar
 from pymatgen.io.vasp.outputs import Oszicar,VaspParserError
@@ -16,10 +15,10 @@ from pymatgen.electronic_structure.core import Spin
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from atomate.common.firetasks.glue_tasks import get_calc_loc, CopyFiles
 from atomate.utils.utils import env_chk
-from myprocesscontrol.tools import Generate_kpoints, Write_INPCAR, get_highsympath
-from myprocesscontrol.electron import Electron
-from myprocesscontrol.myemc import EffectMass
-from myprocesscontrol.aicon import Get_Electron, Get_Phonon
+from aicon.tools import Generate_kpoints, Write_INPCAR, get_highsympath
+from aicon.electron import Electron
+from aicon.myemc import EffectMass
+from aicon.aicon import Get_Electron, Get_Phonon
 import phonopy
 from phonopy.interface.phonopy_yaml import PhonopyYaml
 from phonopy.interface.calculator import get_default_physical_units
@@ -40,15 +39,12 @@ class CheckOptimization(FiretaskBase):
         (As for MyOptimizeFW:
             ["vasp_input_set", "vasp_cmd", "db_file", "name", "count", "kwargs"])      
     """
+    
     optional_params = ["vasp_input_set", "vasp_input_set_params", "vasp_cmd", "db_file", "name", "count", "kwargs"]
     _fw_name = "Check Optimization"
 
     def run_task(self, fw_spec):
-#        fp = open('INPCAR','a')
-#        fp.write("also here!\n")
         try:
-            fp = open('INPCAR','a')
-            fp.write("also here!\n")
             OSZICAR = Oszicar('OSZICAR')
         except VaspParserError as err:
             print(err)
@@ -187,6 +183,7 @@ class WriteEMCInput(FiretaskBase):
     Optional params:
         (["step_size"])
     """
+    
     required_params = ["bnd_name", "calc_loc"]
     optional_params = ["step_size"]
     _fw_name = "Write EMCInput"
@@ -243,6 +240,7 @@ class WriteVaspForDeformedCrystal(FiretaskBase):
      Optional params:
         (None)
      """
+        
      required_params = ["strain", "user_incar_settings"]
      _fw_name = "Write Vasp For Deformed Crystal"
      
@@ -269,6 +267,7 @@ class WritePhononBand(FiretaskBase):
     Optional params:
         (None)        
     """
+    
     _fw_name = "Write Phonon Band"
     required_params = ["supercell"]
     
@@ -298,6 +297,7 @@ class BuildAICONDir(FiretaskBase):
     Optional params:
         (None)
     """
+    
     _fw_name = "Build AICON Directory"
     
     def run_task(self, fw_spec):
@@ -355,6 +355,7 @@ class BuildPhonopyDir(FiretaskBase):
     Optional params:
         (None)
     """
+    
     _fw_name = "Build Phonopy Directory"
     required_params = ["supercell"]
     
@@ -403,6 +404,7 @@ class RunAICONForElec(FiretaskBase):
         (["mode", "Temp", "Doping", "ifSB"])
         
     """
+    
     required_params = ["mode", "Temp", "Doping", "ifSB"]
     _fw_name = "Run AICON For Elec"
     
@@ -424,6 +426,7 @@ class RunAICONForPhon(FiretaskBase):
         (["Temp"])
         
     """
+    
     required_params = ["Temp"]
     _fw_name = "Run AICON For Phon"
     
@@ -443,6 +446,7 @@ class WriteSupercellWithDisp(FiretaskBase):
         (["supercell"])
         
     """
+    
     _fw_name = "Write Supercell With Displacement"
     required_params = ["supercell"]
     
