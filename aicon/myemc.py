@@ -2,14 +2,16 @@
 """
 Created on Thu Oct 17 15:05:25 2019
 
-@author: Tao.Fan, modified from emc.py 
+This file is modified from emc.py
+
+@author: Tao.Fan 
 """
 import numpy as np
 import sys
 import time
 
 class EffectMass(object):
-    '''This class is used to calculate band effective mass at specific point and store the data '''    
+    '''This class is used to calculate band effective mass at specific point and store the data. '''    
     
     EMC_VERSION = '1.51py'
     STENCIL = 5 #3 or 5
@@ -74,8 +76,8 @@ class EffectMass(object):
         return '%.3f %.3f %.3f' % (self.masses[0], self.masses[1], self.masses[2])
     
     __repr__ = __str__
-    #######  Class Method  ##################################################################
-    #
+    #####################################  Class Method  #####################################################
+    
     def MAT_m_VEC(self, m, v):
         p = [ 0.0 for i in range(len(v)) ]
         for i in range(len(m)):
@@ -458,10 +460,6 @@ class EffectMass(object):
         return em, vecs_cart, vecs_frac, vecs_n
     #
     def cal_effmass(self, kpt, stepsize, band, prg, basis, output_fn):
-
-#        filename = 'emcpy.out_'+str(int(time.time()))
-#        sys.stdout = open(filename, 'w')
-        #
         if EffectMass.STENCIL == 3:
             fd_effmass = self.fd_effmass_st3
             st = self.st3
@@ -513,7 +511,6 @@ class EffectMass(object):
         return 
     
     def get_kpointsfile(self, kpt, stepsize, prg, basis):
-        #
         if EffectMass.STENCIL == 3:
             st = self.st3
         elif EffectMass.STENCIL == 5:
