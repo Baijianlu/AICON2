@@ -18,10 +18,10 @@ except ImportError:
     use_setuptools = False
     print("distutils is used.")
     
-extension_AICON = Extension('AICON._extern', sources = [])
-ext_modules_AICON = [extension_AICON]
-packages_AICON = ['aicon']
-scripts_AICON = ['Scripts/AICON']
+extension_aicon = Extension('aicon._extern', sources = [])
+ext_modules_aicon = [extension_aicon]
+packages_aicon = ['aicon']
+scripts_acion = ['Scripts/AICON']
 
 if __name__ == '__main__':
 
@@ -47,11 +47,11 @@ if __name__ == '__main__':
               author='Tao Fan',
               author_email='Tao.Fan@skoltech.ru',
               url='https://github.com/Baijianlu/AICON2.git',
-              packages=packages_AICON,
-              install_requires=['numpy', 'scipy', 'pymatgen'],
+              packages=packages_aicon,
+              install_requires=['numpy', 'scipy', 'pymatgen', 'pandas'],
               provides=['aicon'],
-              scripts=scripts_AICON,
-              ext_modules=ext_modules_AICON)
+              scripts=scripts_aicon,
+              ext_modules=ext_modules_aicon)
     else:
         setup(name='aicon',
               version=version_number,
@@ -59,8 +59,8 @@ if __name__ == '__main__':
               author='Tao Fan',
               author_email='Tao.Fan@skoltech.ru',
               url='https://github.com/Baijianlu/AICON2.git',
-              packages=packages_AICON,
-              requires=['numpy', 'scipy', 'pymatgen'],
+              packages=packages_aicon,
+              requires=['numpy', 'scipy', 'pymatgen', 'pandas'],
               provides=['aicon'],
-              scripts=scripts_AICON,
-              ext_modules=ext_modules_AICON)
+              scripts=scripts_aicon,
+              ext_modules=ext_modules_aicon)
