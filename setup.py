@@ -21,7 +21,7 @@ except ImportError:
 extension_aicon = Extension('aicon._extern', sources = [])
 ext_modules_aicon = [extension_aicon]
 packages_aicon = ['aicon']
-scripts_acion = ['Scripts/AICON']
+scripts_aicon = ['Scripts/AICON']
 
 if __name__ == '__main__':
 
