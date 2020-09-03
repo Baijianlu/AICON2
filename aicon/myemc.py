@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2020 Tao Fan
 # All rights reserved.
-#
+# This file is modified from emc.py
 # This file is part of AICON.
 #
 # Redistribution and use in source and binary forms, with or without
