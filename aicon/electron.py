@@ -15,6 +15,14 @@ import pandas as pd
 EBoltzm = scipy.constants.physical_constants['Boltzmann constant in eV/K'][0]
 C_e = scipy.constants.e
 
+def Get_Electron(filepath, Temp, dope, mode, ifSB):
+    '''For electron transport properties calculation '''
+    Compound = Electron()
+    Compound.Get_bandstru(filepath + "equi/")
+    Compound.Get_values(filepath, Temp, dope, mode, ifSB=ifSB)
+    Compound.Output(Temp, dope, mode)
+
+
 def Get_transport(band, filepath):
     band.Get_eleconduct(filepath)
     band.Get_seebeck(filepath)

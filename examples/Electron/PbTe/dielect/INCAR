@@ -1,0 +1,14 @@
+EDIFF = 1e-07
+EDIFFG = -0.001
+ENCUT = 600
+IBRION = 8
+ICHARG = 2
+ISMEAR = -5
+ISTART = 0
+LCHARG = True
+LEPSILON = True
+LRPA = False
+LWAVE = False
+NSW = 1
+PREC = Accurate
+SYSTEM = Pbte

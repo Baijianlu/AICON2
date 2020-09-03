@@ -16,6 +16,12 @@ Planck = scipy.constants.hbar
 Boltzm = scipy.constants.Boltzmann
 atommass = scipy.constants.atomic_mass
 
+def Get_Phonon(filepath, Temp):
+    '''For lattice thermal conductivity calculation '''
+    kappa = Phonon(filepath)
+    kappa.Get_Kappa(filepath, Temp)
+    kappa.Output(Temp)
+
 def t_Umklapp(grun,velo,Debye,mass,T):                          #relaxation time of umklapp process
     return (grun**2 * Boltzm**2 * T**3)/(mass * velo**2 * Debye * Planck) * np.exp(-Debye/(3*T))
 

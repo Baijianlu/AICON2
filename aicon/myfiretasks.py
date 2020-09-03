@@ -16,9 +16,9 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from atomate.common.firetasks.glue_tasks import get_calc_loc, CopyFiles
 from atomate.utils.utils import env_chk
 from aicon.tools import Generate_kpoints, Write_INPCAR, get_highsympath
-from aicon.electron import Electron
+from aicon.electron import Electron, Get_Electron
 from aicon.myemc import EffectMass
-from aicon.aicon import Get_Electron, Get_Phonon
+from aicon.phonon import Get_Phonon
 import phonopy
 from phonopy.interface.phonopy_yaml import PhonopyYaml
 from phonopy.interface.calculator import get_default_physical_units

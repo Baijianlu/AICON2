@@ -1,0 +1,16 @@
+ADDGRID = True
+EDIFF = 1e-07
+EDIFFG = -0.001
+ENCUT = 600
+IBRION = 6
+ICHARG = 2
+ISIF = 3
+ISMEAR = -5
+ISTART = 0
+IVDW = 11
+LCHARG = False
+LWAVE = False
+NFREE = 4
+POTIM = 0.01
+PREC = Accurate
+SYSTEM = Bite
