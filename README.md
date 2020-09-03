@@ -7,7 +7,7 @@ AICON2 has a DOI:10.1016/j.cpc.2019.107074, you can cite this code like this:
     Tao Fan, Artem R. Oganov, AICON: A program for calculating thermal conductivity quickly and accurately, Comput. Phys. Comm.(2019), 107074, https://doi.org/10.1016/j.cpc.2019.107074
 
 ## prerequisites
-AICON2 is a Python module and requires Python version 3.5 or higher. The dependent Python libraries include [NumPy](http://www.numpy.org/), [SciPy](https://www.scipy.org/), [spglib](https://atztogo.github.io/spglib/), [pymatgen](http://pymatgen.org/index.html) and [atomate](https://atomate.org/) for automatic workflow.  All of them can be easily obtained from the [Python Package Index](https://pypi.python.org/pypi) (PyPI), using tools such as pip. They may also be bundled with Python distributions aimed at scientists, like [Anaconda](https://anaconda.org/), and with a number of Linux distributions. Here we recommend to use Anaconda so that dependencies should be resolved automatically.
+AICON2 is a Python module and requires Python version 3.5 or higher. The dependent Python libraries include [NumPy](http://www.numpy.org/), [SciPy](https://www.scipy.org/), [spglib](https://atztogo.github.io/spglib/), [pymatgen](http://pymatgen.org/index.html). If you want to use automatic workflow management tools, [atomate](https://atomate.org/) and [FireWorks](https://materialsproject.github.io/fireworks/) should also be installed.  All of them can be easily obtained from the [Python Package Index](https://pypi.python.org/pypi) (PyPI), using tools such as pip. They may also be bundled with Python distributions aimed at scientists, like [Anaconda](https://anaconda.org/), and with a number of Linux distributions. Here we recommend to use Anaconda so that dependencies should be resolved automatically.
 
 ## Compiling and install AICON2
 Users installing from source must install the dependencies first and then run:
@@ -15,4 +15,4 @@ Users installing from source must install the dependencies first and then run:
     $ python setup.py install
     
 ## Running the tests
-The distribution includes seven examples. Among them, diamond, Si, SnSe_phon, Mg2Si are for lattice thermal conductivity, while PbTe, SnSe_elect and Bi2Te3 are for electronic transport properties. Those examples are also described in the [paper](https://doi.org/10.1016/j.cpc.2019.107074) and [papar](). Read /doc/UserManual to learn how to use this software and more information about the output files.
+Read /doc/UserManual to learn how to use this software and more information about the output files.
