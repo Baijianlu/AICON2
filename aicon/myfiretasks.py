@@ -93,7 +93,7 @@ class CheckOptimization(FiretaskBase):
                                   "filesystem": env_chk(self.get('filesystem', None), fw_spec),
                                   "path": self.get("path", os.getcwd())})
                 count = count + 1
-                from myprocesscontrol.myfireworks import MyOptimizeFW
+                from aicon.myfireworks import MyOptimizeFW
                 new_fw = MyOptimizeFW(structure=stru, vasp_input_set=vasp_input_set, vasp_cmd=vasp_cmd,
                                     db_file=db_file, name=name, count=count, **kwargs)
                 
