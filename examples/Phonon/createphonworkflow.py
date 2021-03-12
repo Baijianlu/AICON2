@@ -65,7 +65,7 @@ if __name__ == '__main__':
     launchpad = LaunchPad(host=<your database url>, name="test")
     launchpad.reset('', require_password=False)
     
-    workflow = wf_phonon_conductivity(struct, vasp_input_set_relax=custom_settings_relax, vasp_input_set_fixvol_relax=custom_settings_fixvol_relax, vasp_input_set_dfpt=custom_settings_dfpt, vasp_kpoint_set=KPOINT, vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", Temp=[300], supercell=[2,2,2])
+    workflow = wf_phonon_conductivity(struct, vasp_input_set_relax=custom_settings_relax, vasp_input_set_fixvol_relax=custom_settings_fixvol_relax, vasp_input_set_dfpt=custom_settings_dfpt, vasp_kpoint_set=KPOINT, vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", Temp=[300], ifscale=True, supercell=[2,2,2])
     
     # store workflow and launch it locally
     launchpad.add_wf(workflow)
