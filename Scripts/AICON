@@ -48,7 +48,7 @@ def Get_Electron(filepath, Temp, dope, mode, ifSB):
 def Get_Phonon(filepath, Temp, ifscale):
     '''For lattice thermal conductivity calculation '''
     kappa = Phonon(filepath)
-    kappa.Get_Kappa(filepath, Temp, ifscale)
+    kappa.Get_Kappa(filepath, Temp, ifscale=ifscale)
     kappa.Output(Temp)
     
 
