@@ -436,18 +436,19 @@ class RunAICONForPhon(FiretaskBase):
     Run AICON to calculate lattice thermal conductivity.
     
     Required params:
-        (["Temp"])
+        (["Temp", "ifscale"])
         
     """
     
-    required_params = ["Temp"]
+    required_params = ["Temp", "ifscale"]
     _fw_name = "Run AICON For Phon"
     
     def run_task(self, fw_spec):
         Temp = self.get("Temp", [300])
         os.system('cp orig/band.yaml ./')
         os.system('cp orig/POSCAR-unitcell ./POSCAR')
-        Get_Phonon("./", Temp)
+        ifscale = self.get("ifscale", False)
+        Get_Phonon("./", Temp, ifscale)
 
 
 @explicit_serialize

@@ -32,10 +32,10 @@ Planck = scipy.constants.hbar
 Boltzm = scipy.constants.Boltzmann
 atommass = scipy.constants.atomic_mass
 
-def Get_Phonon(filepath, Temp):
+def Get_Phonon(filepath, Temp, ifscale):
     '''For lattice thermal conductivity calculation '''
     kappa = Phonon(filepath)
-    kappa.Get_Kappa(filepath, Temp)
+    kappa.Get_Kappa(filepath, Temp, ifscale=ifscale)
     kappa.Output(Temp)
 
 def t_Umklapp(grun,velo,Debye,mass,T):                          #relaxation time of umklapp process
@@ -48,7 +48,7 @@ def t_Isotope(velo,vol,abund,T):                                #relaxation time
     return ((vol*1e30) * (Boltzm*1e23)**4 * abund * (T*1e-2)**4)/(4 * np.pi * (Planck*1e34)**4 * (velo*1e-3)**3) * 1e13    
 
 def constC(velo):
-    return Boltzm**4/(2 * np.pi**2 * Planck**3 * velo)
+    return Boltzm**4/(2 * np.pi**2 * Planck**3 * velo)          #
 
 def get_fun1(x,RT_N,RT_U,RT_ISO):
     return 1/(RT_N * x + RT_U * x**2 + RT_ISO * x**4) * x**4 * np.exp(x)/(np.exp(x)-1)**2
@@ -82,12 +82,20 @@ class Phonon(object):
         self.M_avg = atommass * self.M_avg             
         self.V_avg = self.struct.volume/self.struct.composition.num_atoms * 1e-30  
         
+        self.prims = self.struct.get_primitive_structure()
+        self.Vol = self.prims.volume * 1e-30                                  
+        self.p = self.prims.composition.num_atoms
+        
     def Get_Para(self, filepath):
         (self.gruneisen, self.velocity, self.DebyeT, self.freq, self.optic_base) = Get_GVD(filepath)
         self.velocity = self.velocity * 1e2
         self.abund = calc_MFPS(list(self.struct.symbol_set))
         self.ADebye = self.DebyeT[2]                                          
         self.ODebye = self.DebyeT[3]
+        print(self.gruneisen)
+        print(self.velocity)
+        print(self.DebyeT)
+        print(self.freq)
         
     def HeatCapacity(self, ADebye, ODebye, T, struct):                    #function to calculate heat capacity
         N = 1                                                             # number of primitive cell
@@ -101,15 +109,16 @@ class Phonon(object):
 
 
     def Output(self, Temp):
-        Kappa_dict={"Temp": Temp, "Kappa": self.avgkappa, "R_A": self.ratio, "R_O": 1-self.ratio,\
+        Kappa_dict={"Temp": Temp, "Kappa": self.avgkappa, \
                     "TA_N": self.relaxtime[:,0,0], "TA_U": self.relaxtime[:,0,1], "TA_ISO": self.relaxtime[:,0,2],\
                     "TA\'_N": self.relaxtime[:,1,0], "TA\'_U": self.relaxtime[:,1,1], "TA\'_ISO": self.relaxtime[:,1,2],\
                     "LA_N": self.relaxtime[:,2,0], "LA_U": self.relaxtime[:,2,1], "LA_ISO": self.relaxtime[:,2,2],\
                     "O_N": self.relaxtime[:,3,0], "O_U": self.relaxtime[:,3,1], "O_ISO": self.relaxtime[:,3,2]}
         Kappa_FILE = pd.DataFrame(Kappa_dict)
         Kappa_FILE.to_excel('Kappa.xlsx', index_label='index', merge_cells=False)
+#        Kappa_FILE.to_csv('Kappa.csv', index_label='index')
         
-    def Get_Kappa(self, filepath, Temp):
+    def Get_Kappa(self, filepath, Temp, ifscale=False):
         ''' 
         Calculate lattice thermal conductivity at given temperature.
         
@@ -119,6 +128,9 @@ class Phonon(object):
             The directory contain POSCAR, band.yaml and gruneisen.yaml files.
         Temp: list
             The list of temperature.
+        ifscale: bool
+            If True, the calculated Kappa will be multiplied with a predefined factor.
+            The default value is False.
         '''
         
         self.kappa = np.zeros((len(Temp), 4))
@@ -127,7 +139,12 @@ class Phonon(object):
         self.ratio =  np.zeros(len(Temp))
         
         self.Get_Para(filepath)
-        
+
+        if ifscale:
+            scale = 0.60371
+        else:
+            scale = 1.0
+
         for k in np.arange(len(Temp)):
             T = Temp[k]
             for branch in np.arange(4):                                          # three acoustic branch and one optic branch
@@ -143,7 +160,7 @@ class Phonon(object):
                     BettaT_2 = quad(get_fun3, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0]
 #                    print(quad(get_fun3, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0])
                     IT_2 = C_T * T**3 * BettaT_1**2/BettaT_2
-                    self.kappa[k, branch] = IT_1 + IT_2
+                    self.kappa[k, branch] = 1/3 * (IT_1 + IT_2)
                     self.relaxtime[k, branch, 0] = 1 / (coef_TN * self.DebyeT[branch]/T)
                     self.relaxtime[k, branch, 1] = 1 / (coef_TU * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 2] = 1 / (coef_TISO * (self.DebyeT[branch]/T)**4)
@@ -158,7 +175,7 @@ class Phonon(object):
 #                    print(quad(get_fun5, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO)))
                     BettaL_2 = quad(get_fun6, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO))[0]
                     IL_2 = C_L * T**3 * BettaL_1**2/BettaL_2
-                    self.kappa[k, branch] = IL_1 + IL_2
+                    self.kappa[k, branch] = 1/3 * (IL_1 + IL_2)
                     self.relaxtime[k, branch, 0] = 1 / (coef_LN * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 1] = 1 / (coef_LU * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 2] = 1 / (coef_LISO * (self.DebyeT[branch]/T)**4)
@@ -166,19 +183,16 @@ class Phonon(object):
                     coef_OU = t_Umklapp(self.gruneisen[branch],self.velocity[branch],self.DebyeT[branch],self.M_avg,T)
                     coef_ON = t_Normal(self.gruneisen[branch],self.velocity[branch],self.M_avg,self.V_avg,T)
                     coef_OISO = t_Isotope(self.velocity[branch],self.V_avg,self.abund,T)
-                    C_O = constC(self.velocity[branch])
-                    IO_1 = C_O * T**3 * quad(get_fun4, self.optic_base/T, self.DebyeT[branch]/T, args=(coef_ON,coef_OU,coef_OISO))[0]
-                    BettaO_1 = quad(get_fun5, self.optic_base/T, self.DebyeT[branch]/T, args=(coef_ON,coef_OU,coef_OISO))[0]
-                    BettaO_2 = quad(get_fun6, self.optic_base/T, self.DebyeT[branch]/T, args=(coef_ON,coef_OU,coef_OISO))[0]
-                    IO_2 = C_O * T**3 * BettaO_1**2/BettaO_2
-                    self.kappa[k, branch] = IO_1 + IO_2
+                    Normal_time = 1.0 / (coef_ON * (self.DebyeT[branch]/T)**2)
+                    Resist_time = 1.0 / (coef_OU * (self.DebyeT[branch]/T)**2 + coef_OISO * (self.DebyeT[branch]/T)**4)
+                    Total_time = 1.0 / (1.0/Normal_time + 1.0/Resist_time)
+                    IO_1 = (3 * self.p -3) * 1/self.Vol * Boltzm * (self.ODebye/T)**2 * np.exp(self.ODebye/T)/(np.exp(self.ODebye/T)-1)**2 * self.velocity[branch]**2 * Total_time
+                    IO_2 = (3 * self.p -3) * 1/self.Vol * Boltzm * (self.ODebye/T)**2 * np.exp(self.ODebye/T)/(np.exp(self.ODebye/T)-1)**2 * self.velocity[branch]**2 * Total_time/Normal_time * Resist_time
+                    self.kappa[k, branch] = 1/3 * (IO_1 + IO_2)
                     self.relaxtime[k, branch, 0] = 1 / (coef_ON * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 1] = 1 / (coef_OU * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 2] = 1 / (coef_OISO * (self.DebyeT[branch]/T)**4)
             
-            (Cv_a, Cv_o) = self.HeatCapacity(self.ADebye, self.ODebye, T, self.struct)
-            self.ratio[k] = Cv_a/(Cv_a+Cv_o)
-            self.avgkappa[k] = self.ratio[k] * np.average(self.kappa[k, 0:3]) + (1-self.ratio[k]) * self.kappa[k, 3]
-                   
+            self.avgkappa[k] = scale * np.sum(self.kappa[k, :]) 
         
-        
+                

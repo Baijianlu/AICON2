@@ -49,10 +49,9 @@ class Hallcoeff(object):
     def Get_A_NP(self):
         ''' Calculate Hall factor with non-parabolic approximation.'''
         
-        fun1 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
-        fun2 = lambda z, x, T: (1e14 * self.Totaltime(z, T))**2 * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)**2
-        fun3 = lambda z, x, T: (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3
-        self.A = lambda x, T: self.A_K * quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / (quad(fun1, 0, Upperlimit(x), args=(x, T))[0])**2
+        fun1 = lambda z, x, T: (1e14 * self.Totaltime(z, T))**2 * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)**2
+        self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
+#        self.A = lambda x, T: self.A_K * quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / (quad(fun1, 0, Upperlimit(x), args=(x, T))[0])**2
 
     def Get_A_P(self):
         ''' Calculate Hall factor with parabolic approximation. '''
@@ -62,14 +61,12 @@ class Hallcoeff(object):
         fun3 = lambda z, x, T: (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3
         self.A = lambda x, T: self.A_K * quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / (quad(fun1, 0, Upperlimit(x), args=(x, T))[0])**2
 
-    def Get_hallcoeff(self, density, ACO = True, ACO_P = False, OPT = False, OPT_P = False, IMP = False, IMP_P = False):
+    def Get_hallcoeff(self, ACO = True, ACO_P = False, OPT = False, OPT_P = False, IMP = False, IMP_P = False):
         ''' 
         Calculate Hall coefficient. 
         
         Parameters:
         ----------
-        density: function
-            The carrier concentration function.
         ACO: bool
             If consider the acoustic phonon scattering in total relaxation time.
         ACO_P: bool
@@ -97,11 +94,8 @@ class Hallcoeff(object):
         
         self.Get_AK()
         
-        if self.flag == 'CSB' or self.flag == 'VSB':
-            self.Get_A_NP()
-        else:
-            self.Get_A_NP()
+        self.Get_A_NP()
 
-        self.hallcoeff = lambda x, T: self.A(x, T) / (C_e * density(x, T))
+#        self.hallcoeff = lambda x, T: self.A(x, T) / (C_e * density(x, T))
         
         

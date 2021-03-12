@@ -30,6 +30,7 @@ from aicon.hallcoeff import Hallcoeff
 
 m_e = scipy.constants.m_e
 C_e = scipy.constants.e
+Boltzm = scipy.constants.Boltzmann
 EPlanck = scipy.constants.physical_constants['Planck constant over 2 pi in eV s'][0]
 EBoltzm = scipy.constants.physical_constants['Boltzmann constant in eV/K'][0]
 EtoJoul = scipy.constants.physical_constants['joule-electron volt relationship'][0]
@@ -104,7 +105,6 @@ class Band(object):
         else:
             self.Density = lambda x, T: EtoJoul**(3/2) * (2 * np.abs(self.RT.doseffmass) * m_e * EBoltzm * T)**(3/2) / (3 * np.pi**2 * EPlanck**3) \
             * self.RT.integral(x, T, 0, 3/2, 0)                                                               #unit: m^-3
-
     
     def Get_eleconduct(self, filepath):
         if not hasattr(self, 'Mobility'):
@@ -135,7 +135,62 @@ class Band(object):
         self.Hallcoeff = Hallcoeff(self.flag, self.RT)
         self.Hallcoeff.Get_hallcoeff(self.Density, ACO = True, OPT = True, IMP = False)                     #unit: m^3/C
             
-            
+    def Get_transport_para(self, filepath, mu, Temp):
+        '''Calculate electronic transport parameters and return the values. '''
+        AcoRelaxT = np.zeros(np.shape(mu))
+        OptRelaxT = np.zeros(np.shape(mu))
+        ImpRelaxT = np.zeros(np.shape(mu))
+        Moment = np.zeros(np.shape(mu))
+        TotalRelaxT = np.zeros(np.shape(mu))
+        Avgeffmass = np.zeros(np.shape(mu))
+        Density = np.zeros(np.shape(mu))
+        Mobility = np.zeros(np.shape(mu))
+        Elcond = np.zeros(np.shape(mu))
+        TemporIntegration = np.zeros(np.shape(mu))
+        SEEBECK = np.zeros(np.shape(mu))
+        Lorenz = np.zeros(np.shape(mu))
+        EKAPPA = np.zeros(np.shape(mu))
+        Hallfactor = np.zeros(np.shape(mu))
+        HALLCOEFF = np.zeros(np.shape(mu))
+        PF = np.zeros(np.shape(mu))
+        
+        if not hasattr(self, 'RT'):
+            self.RT = TotalRelaxTime(self.flag, self.degeneracy, self.bandgap, self.pos['bndindex'], self.pos['kptindex'])
+            self.RT.Get_Totaltime(filepath, ACO = True, OPT = True, IMP = True)
+        
+        if not hasattr(self, 'Density'):
+            self.Density = lambda x, T: EtoJoul**(3/2) * (2 * np.abs(self.RT.doseffmass) * m_e * EBoltzm * T)**(3/2) / (3 * np.pi**2 * EPlanck**3) \
+                                        * self.RT.integral(x, T, 0, 3/2, 0)
+        
+        self.Seebeck = Seebeck(self.flag, self.RT)
+        self.Seebeck.Get_seebeck(ACO = True, OPT = True, IMP = False)
+        
+        self.Ekappa = Ekappa(self.flag, self.RT)
+        self.Ekappa.Get_ekappa(ACO = True, OPT = True, IMP = False)
+        
+        self.Hallcoeff = Hallcoeff(self.flag, self.RT)
+        self.Hallcoeff.Get_hallcoeff(ACO = True, OPT = True, IMP = False)
+        
+        for i, T in enumerate(Temp):
+            for j, x in enumerate(mu[i]):
+                (Moment[i,j],AcoRelaxT[i,j],Avgeffmass[i,j]) = self.RT.ACO.Get_values(x, T) 
+                OptRelaxT[i,j] = self.RT.OPT.Get_values(x, T, Moment[i,j])
+                Density[i,j] = self.Density(x, T)
+                ImpRelaxT[i,j] = self.RT.IMP.Get_values(x, T, Moment[i,j], Density[i,j])
+                TotalRelaxT[i,j] = 1.0/(1.0/AcoRelaxT[i,j] + 1.0/OptRelaxT[i,j] + 1.0/ImpRelaxT[i,j])                
+                Mobility[i,j] = C_e * TotalRelaxT[i,j] / (Avgeffmass[i,j] * m_e)
+                Elcond[i,j] = C_e * Density[i,j] * Mobility[i,j]
+                TemporIntegration[i,j] = self.Seebeck.integfun2(x, T)
+                SEEBECK[i,j] = Boltzm / C_e * self.Seebeck.integfun1(x, T) / TemporIntegration[i,j]
+                Lorenz[i,j] = (Boltzm / C_e)**2 * (self.Ekappa.integfun1(x, T) / TemporIntegration[i,j] - (self.Ekappa.integfun2(x, T) / TemporIntegration[i,j])**2)
+                EKAPPA[i,j] = Lorenz[i,j] * Elcond[i,j] * T
+                Hallfactor[i,j] = self.Hallcoeff.A_K * self.Hallcoeff.integfun1(x, T) * Moment[i,j] / TemporIntegration[i,j]**2
+                HALLCOEFF[i,j] = Hallfactor[i,j] / (C_e * Density[i,j])
+                PF[i,j] = SEEBECK[i,j]**2 * Elcond[i,j]
+                        
+        return AcoRelaxT, OptRelaxT, ImpRelaxT, TotalRelaxT, Density, Mobility,\
+               Elcond, SEEBECK, Lorenz, EKAPPA, Hallfactor, HALLCOEFF, PF
+        
             
             
             

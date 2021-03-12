@@ -1,7 +1,21 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2020 Tao Fan
 # All rights reserved.
-# This file is modified from emc.py
+#
+# This file is modified from emc.py[https://github.com/afonari/emc]. emc is licensed under MIT license.
+# Copyright (c) 2012, Alexandr Fonari, Christopher Sutton
+# Cite as: "Effective Mass Calculator, A. Fonari, C. Sutton, (2012)."
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+#
+# The function jacobi is modified from NWChem/contrib/python/mathutil.py[https://github.com/nwchemgit/nwchem]. NWChem is licensed under the Educational Community License, Version 2.0. See ECL_NWChem.TXT in this directory about its copyright and permission.
+#
+#
 # This file is part of AICON.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -144,9 +158,10 @@ class EffectMass(object):
         return True
     
     def jacobi(self, ainput):
-        # from NWChem/contrib/python/mathutil.py
-        # possible need to rewrite due to licensing issues
-        #
+        '''
+        Diagonalize a real symmetric matrix using the variable threshold cyclic Jacobi method.
+        '''
+        
         from math import sqrt
         #
         a = [[ ainput[i][j] for i in range(len( ainput[j] )) ] for j in range(len( ainput )) ] # copymatrix

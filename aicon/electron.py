@@ -38,13 +38,6 @@ def Get_Electron(filepath, Temp, dope, mode, ifSB):
     Compound.Get_values(filepath, Temp, dope, mode, ifSB=ifSB)
     Compound.Output(Temp, dope, mode)
 
-
-def Get_transport(band, filepath):
-    band.Get_eleconduct(filepath)
-    band.Get_seebeck(filepath)
-    band.Get_ekappa(filepath)
-    band.Get_hallcoeff(filepath)
-
 def find_mu_doping(band, doping, mu, Temp):
     '''
     Find the reduced chemical potential corresponding to the given carrier concentration.
@@ -216,346 +209,164 @@ class Electron(object):
         The results are stored in the self.data attribute.
         '''
         self.data = dict()
-        self.data['CBM'] = dict()
-        self.data['VBM'] = dict()
-        self.data['CSB'] = dict()
-        self.data['VSB'] = dict()
-        self.data['TCB'] = dict()
-        self.data['TVB'] = dict()
         
         if mode == 'standard':
             mu = np.arange(-self.bandgap/2, -self.bandgap/2 + 1.0, 0.002)                #start from the middle of the gap to 1.0 eV higher place, with the stepsize 0.002 eV.
             self.mu = mu
-            self.data['CBM']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Mobility'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Density'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Elcond'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['PF'] = np.zeros((len(Temp), len(mu)))
-            self.data['CBM']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Mobility'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Density'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Elcond'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['PF'] = np.zeros((len(Temp), len(mu)))
-            self.data['VBM']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
-            
             self.Get_CBM()
             self.Get_VBM()
             if ifSB:
                 self.Get_SB()
-            Get_transport(self.CBM, filepath)
-            Get_transport(self.VBM, filepath)
+                
+            mux_array=list()
+            for T in Temp:
+                temporary = [ele/(EBoltzm*T) for ele in mu]
+                mux_array.append(temporary)
+            mux_array = np.array(mux_array)
+            (CBM_AcoRelaxT, CBM_OptRelaxT, CBM_ImpRelaxT, CBM_TotalRelaxT, CBM_Density, CBM_Mobility,\
+             CBM_Elcond, CBM_Seebeck, CBM_Lorenz, CBM_Ekappa, CBM_Hallfactor, CBM_Hallcoeff, CBM_PF) = self.CBM.Get_transport_para(filepath, mux_array, Temp)
+            (VBM_AcoRelaxT, VBM_OptRelaxT, VBM_ImpRelaxT, VBM_TotalRelaxT, VBM_Density, VBM_Mobility,\
+             VBM_Elcond, VBM_Seebeck, VBM_Lorenz, VBM_Ekappa, VBM_Hallfactor, VBM_Hallcoeff, VBM_PF) = self.VBM.Get_transport_para(filepath, mux_array, Temp) 
+            self.data['CBM'] = {'TotalRelaxT':CBM_TotalRelaxT, 'AcoRelaxT':CBM_AcoRelaxT, 'OptRelaxT':CBM_OptRelaxT, 'ImpRelaxT':CBM_ImpRelaxT, \
+                                 'Mobility':CBM_Mobility, 'Density':CBM_Density, 'Elcond':CBM_Elcond, 'Seebeck':CBM_Seebeck, 'Lorenz':CBM_Lorenz, \
+                                 'Ekappa':CBM_Ekappa, 'Hallcoeff':CBM_Hallcoeff, 'PF':CBM_PF}
+            self.data['VBM'] = {'TotalRelaxT':VBM_TotalRelaxT, 'AcoRelaxT':VBM_AcoRelaxT, 'OptRelaxT':VBM_OptRelaxT, 'ImpRelaxT':VBM_ImpRelaxT, \
+                                 'Mobility':VBM_Mobility, 'Density':VBM_Density, 'Elcond':VBM_Elcond, 'Seebeck':VBM_Seebeck, 'Lorenz':VBM_Lorenz, \
+                                 'Ekappa':VBM_Ekappa, 'Hallcoeff':VBM_Hallcoeff, 'PF':VBM_PF}
             
             if hasattr(self, 'CSB'):
-                self.data['CSB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Mobility'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Density'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Elcond'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['PF'] = np.zeros((len(Temp), len(mu)))
-                self.data['CSB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Mobility'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Density'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Elcond'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['PF'] = np.zeros((len(Temp), len(mu)))
-                self.data['TCB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
-                Get_transport(self.CSB, filepath)
+                cmux_array=list()
                 gap_csb = self.CSB.bandgap - self.CBM.bandgap
+                for i, T in enumerate(Temp):
+                    temporary = mux_array[i,:] - gap_csb/(EBoltzm*T)
+                    cmux_array.append(temporary)
+                cmux_array = np.array(cmux_array)
+                (CSB_AcoRelaxT, CSB_OptRelaxT, CSB_ImpRelaxT, CSB_TotalRelaxT, CSB_Density, CSB_Mobility,\
+                 CSB_Elcond, CSB_Seebeck, CSB_Lorenz, CSB_Ekappa, CSB_Hallfactor, CSB_Hallcoeff, CSB_PF) = self.CSB.Get_transport_para(filepath, cmux_array, Temp)
+                TCB_Density = CBM_Density + CSB_Density
+                TCB_Elcond = CBM_Elcond + CSB_Elcond
+                TCB_Mobility = TCB_Elcond / (C_e * TCB_Density)
+                TCB_Seebeck = (CBM_Seebeck * CBM_Elcond + CSB_Seebeck * CSB_Elcond ) / TCB_Elcond
+                TCB_Lorenz = (CBM_Lorenz * CBM_Elcond + CSB_Lorenz * CSB_Elcond) / TCB_Elcond
+                TCB_Ekappa = np.array([TCB_Lorenz[i] * TCB_Elcond[i] * T for i, T in enumerate(Temp)]) 
+                TCB_Hallcoeff = (CBM_Hallfactor * CBM_Mobility * CBM_Elcond + CSB_Hallfactor * CSB_Mobility * CSB_Elcond) / (TCB_Elcond)**2
+                TCB_PF = TCB_Seebeck**2 * TCB_Elcond
+                self.data['CSB'] = {'TotalRelaxT':CSB_TotalRelaxT, 'AcoRelaxT':CSB_AcoRelaxT, 'OptRelaxT':CSB_OptRelaxT, 'ImpRelaxT':CSB_ImpRelaxT, \
+                                     'Mobility':CSB_Mobility, 'Density':CSB_Density, 'Elcond':CSB_Elcond, 'Seebeck':CSB_Seebeck, 'Lorenz':CSB_Lorenz, \
+                                     'Ekappa':CSB_Ekappa, 'Hallcoeff':CSB_Hallcoeff, 'PF':CSB_PF}
+                self.data['TCB'] = {'Mobility':TCB_Mobility, 'Density':TCB_Density, 'Elcond':TCB_Elcond, 'Seebeck':TCB_Seebeck, 'Lorenz':TCB_Lorenz, \
+                                     'Ekappa':TCB_Ekappa, 'Hallcoeff':TCB_Hallcoeff, 'PF':TCB_PF}
                 
             if hasattr(self, 'VSB'):
-                self.data['VSB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Mobility'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Density'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Elcond'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['PF'] = np.zeros((len(Temp), len(mu)))
-                self.data['VSB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['TotalRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['AcoRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['OptRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['ImpRelaxT'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Mobility'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Density'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Elcond'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Seebeck'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Lorenz'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Ekappa'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['PF'] = np.zeros((len(Temp), len(mu)))
-                self.data['TVB']['Hallcoeff'] = np.zeros((len(Temp), len(mu)))  
-                Get_transport(self.VSB, filepath)
+                vmux_array=list()
                 gap_vsb = self.VSB.bandgap - self.VBM.bandgap
-                
-            for i, T in enumerate(Temp):
-                mu_x = mu / (EBoltzm * T)
-                for j, x in enumerate(mu_x):
-                    self.data['CBM']['TotalRelaxT'][i,j] = self.CBM.RT.Totaltime(x, T)
-                    self.data['CBM']['AcoRelaxT'][i,j] = self.CBM.RT.ACO.Avgacotime(x, T)
-                    self.data['CBM']['OptRelaxT'][i,j] = self.CBM.RT.OPT.Avgopttime(x, T)
-                    self.data['CBM']['ImpRelaxT'][i,j] = self.CBM.RT.IMP.Avgimptime(x, T)
-                    self.data['CBM']['Mobility'][i,j] = self.CBM.Mobility(x, T)
-                    self.data['CBM']['Density'][i,j] = self.CBM.Density(x, T)
-                    self.data['CBM']['Elcond'][i,j] = self.CBM.Elcond(x, T)
-                    self.data['CBM']['Seebeck'][i,j] = self.CBM.Seebeck.seebeck(x, T)
-                    self.data['CBM']['Lorenz'][i,j] = self.CBM.Ekappa.lorenz(x, T)
-                    self.data['CBM']['Ekappa'][i,j] = self.CBM.Ekappa.ekappa(x, T)
-                    self.data['CBM']['Hallcoeff'][i,j] = self.CBM.Hallcoeff.hallcoeff(x, T)
-                    self.data['CBM']['PF'][i,j] = self.data['CBM']['Seebeck'][i,j]**2 * self.data['CBM']['Elcond'][i,j]
-                    self.data['VBM']['TotalRelaxT'][i,j] = self.VBM.RT.Totaltime(x, T)
-                    self.data['VBM']['AcoRelaxT'][i,j] = self.VBM.RT.ACO.Avgacotime(x, T)
-                    self.data['VBM']['OptRelaxT'][i,j] = self.VBM.RT.OPT.Avgopttime(x, T)
-                    self.data['VBM']['ImpRelaxT'][i,j] = self.VBM.RT.IMP.Avgimptime(x, T)
-                    self.data['VBM']['Mobility'][i,j] = self.VBM.Mobility(x, T)
-                    self.data['VBM']['Density'][i,j] = self.VBM.Density(x, T)
-                    self.data['VBM']['Elcond'][i,j] = self.VBM.Elcond(x, T)
-                    self.data['VBM']['Seebeck'][i,j] = self.VBM.Seebeck.seebeck(x, T)
-                    self.data['VBM']['Lorenz'][i,j] = self.VBM.Ekappa.lorenz(x, T)
-                    self.data['VBM']['Ekappa'][i,j] = self.VBM.Ekappa.ekappa(x, T)
-                    self.data['VBM']['Hallcoeff'][i,j] = self.VBM.Hallcoeff.hallcoeff(x, T)
-                    self.data['VBM']['PF'][i,j] = self.data['VBM']['Seebeck'][i,j]**2 * self.data['VBM']['Elcond'][i,j]
-                    if hasattr(self, 'CSB'):
-                        self.data['CSB']['TotalRelaxT'][i,j] = self.CSB.RT.Totaltime(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['AcoRelaxT'][i,j] = self.CSB.RT.ACO.Avgacotime(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['OptRelaxT'][i,j] = self.CSB.RT.OPT.Avgopttime(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['ImpRelaxT'][i,j] = self.CSB.RT.IMP.Avgimptime(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Mobility'][i,j] = self.CSB.Mobility(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Density'][i,j] = self.CSB.Density(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Elcond'][i,j] = self.CSB.Elcond(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Seebeck'][i,j] = self.CSB.Seebeck.seebeck(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Lorenz'][i,j] = self.CSB.Ekappa.lorenz(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Ekappa'][i,j] = self.CSB.Ekappa.ekappa(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Hallcoeff'][i,j] = self.CSB.Hallcoeff.hallcoeff(x - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['PF'][i,j] = self.data['CSB']['Seebeck'][i,j]**2 * self.data['CSB']['Elcond'][i,j]
-                        self.data['TCB']['Density'][i,j] = self.data['CBM']['Density'][i,j] + self.data['CSB']['Density'][i,j]
-                        self.data['TCB']['Elcond'][i,j] = self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Elcond'][i,j]
-                        self.data['TCB']['Mobility'][i,j] = self.data['TCB']['Elcond'][i,j] / (C_e * self.data['TCB']['Density'][i,j])
-                        self.data['TCB']['Seebeck'][i,j] = (self.data['CBM']['Seebeck'][i,j] * self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Seebeck'][i,j] * self.data['CSB']['Elcond'][i,j]) / (self.data['CBM']['Elcond'][i,j]+self.data['CSB']['Elcond'][i,j])
-                        self.data['TCB']['Lorenz'][i,j] = (self.data['CBM']['Lorenz'][i,j] * self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Lorenz'][i,j] * self.data['CSB']['Elcond'][i,j]) / (self.data['CBM']['Elcond'][i,j]+self.data['CSB']['Elcond'][i,j])
-                        self.data['TCB']['Ekappa'][i,j] = self.data['TCB']['Lorenz'][i,j] * self.data['TCB']['Elcond'][i,j] * T
-                        self.data['TCB']['Hallcoeff'][i,j] = (self.CBM.Hallcoeff.A(x, T) * self.data['CBM']['Mobility'][i,j] * self.data['CBM']['Elcond'][i,j] + self.CSB.Hallcoeff.A(x - gap_csb/(EBoltzm * T), T) * self.data['CSB']['Mobility'][i,j] * self.data['CSB']['Elcond'][i,j]) \
-                                                             / (self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Elcond'][i,j])**2
-                        self.data['TCB']['PF'][i,j] = self.data['TCB']['Seebeck'][i,j]**2 * self.data['TCB']['Elcond'][i,j]
-                    if hasattr(self, 'VSB'):
-                        self.data['VSB']['TotalRelaxT'][i,j] = self.VSB.RT.Totaltime(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['AcoRelaxT'][i,j] = self.VSB.RT.ACO.Avgacotime(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['OptRelaxT'][i,j] = self.VSB.RT.OPT.Avgopttime(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['ImpRelaxT'][i,j] = self.VSB.RT.IMP.Avgimptime(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Mobility'][i,j] = self.VSB.Mobility(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Density'][i,j] = self.VSB.Density(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Elcond'][i,j] = self.VSB.Elcond(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Seebeck'][i,j] = self.VSB.Seebeck.seebeck(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Lorenz'][i,j] = self.VSB.Ekappa.lorenz(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Ekappa'][i,j] = self.VSB.Ekappa.ekappa(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['PF'][i,j] = self.data['VSB']['Seebeck'][i,j]**2 * self.data['VSB']['Elcond'][i,j]
-                        self.data['VSB']['Hallcoeff'][i,j] = self.VSB.Hallcoeff.hallcoeff(x - gap_vsb/(EBoltzm * T), T)
-                        self.data['TVB']['Density'][i,j] = self.data['VBM']['Density'][i,j] + self.data['VSB']['Density'][i,j]
-                        self.data['TVB']['Elcond'][i,j] = self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Elcond'][i,j]
-                        self.data['TVB']['Mobility'][i,j] = self.data['TVB']['Elcond'][i,j] / (C_e * self.data['TVB']['Density'][i,j])
-                        self.data['TVB']['Seebeck'][i,j] = (self.data['VBM']['Seebeck'][i,j] * self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Seebeck'][i,j] * self.data['VSB']['Elcond'][i,j]) / (self.data['VBM']['Elcond'][i,j]+self.data['VSB']['Elcond'][i,j])
-                        self.data['TVB']['Lorenz'][i,j] = (self.data['VBM']['Lorenz'][i,j] * self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Lorenz'][i,j] * self.data['VSB']['Elcond'][i,j]) / (self.data['VBM']['Elcond'][i,j]+self.data['VSB']['Elcond'][i,j])
-                        self.data['TVB']['Ekappa'][i,j] = self.data['TVB']['Lorenz'][i,j] * self.data['TVB']['Elcond'][i,j] * T
-                        self.data['TVB']['Hallcoeff'][i,j] = (self.VBM.Hallcoeff.A(x, T) * self.data['VBM']['Mobility'][i,j] * self.data['VBM']['Elcond'][i,j] + self.VSB.Hallcoeff.A(x - gap_vsb/(EBoltzm * T), T) * self.data['VSB']['Mobility'][i,j] * self.data['VSB']['Elcond'][i,j]) \
-                                                             / (self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Elcond'][i,j])**2
-                        self.data['TVB']['PF'][i,j] = self.data['TVB']['Seebeck'][i,j]**2 * self.data['TVB']['Elcond'][i,j]                    
+                for i, T in enumerate(Temp):
+                    temporary = mux_array[i,:] - gap_vsb/(EBoltzm*T)
+                    vmux_array.append(temporary)
+                vmux_array = np.array(vmux_array)  
+                (VSB_AcoRelaxT, VSB_OptRelaxT, VSB_ImpRelaxT, VSB_TotalRelaxT, VSB_Density, VSB_Mobility,\
+                 VSB_Elcond, VSB_Seebeck, VSB_Lorenz, VSB_Ekappa, VSB_Hallfactor, VSB_Hallcoeff, VSB_PF) = self.VSB.Get_transport_para(filepath, vmux_array, Temp)
+                TVB_Density = VBM_Density + VSB_Density
+                TVB_Elcond = VBM_Elcond + VSB_Elcond
+                TVB_Mobility = TVB_Elcond / (C_e * TVB_Density)
+                TVB_Seebeck = (VBM_Seebeck * VBM_Elcond + VSB_Seebeck * VSB_Elcond ) / TVB_Elcond
+                TVB_Lorenz = (VBM_Lorenz * VBM_Elcond + VSB_Lorenz * VSB_Elcond) / TVB_Elcond
+                TVB_Ekappa = np.array([TVB_Lorenz[i] * TVB_Elcond[i] * T for i, T in enumerate(Temp)]) 
+                TVB_Hallcoeff = (VBM_Hallfactor * VBM_Mobility * VBM_Elcond + VSB_Hallfactor * VSB_Mobility * VSB_Elcond) / (TVB_Elcond)**2
+                TVB_PF = TVB_Seebeck**2 * TVB_Elcond            
+                self.data['VSB'] = {'TotalRelaxT':VSB_TotalRelaxT, 'AcoRelaxT':VSB_AcoRelaxT, 'OptRelaxT':VSB_OptRelaxT, 'ImpRelaxT':VSB_ImpRelaxT, \
+                                     'Mobility':VSB_Mobility, 'Density':VSB_Density, 'Elcond':VSB_Elcond, 'Seebeck':VSB_Seebeck, 'Lorenz':VSB_Lorenz, \
+                                     'Ekappa':VSB_Ekappa, 'Hallcoeff':VSB_Hallcoeff, 'PF':VSB_PF}
+                self.data['TVB'] = {'Mobility':TVB_Mobility, 'Density':TVB_Density, 'Elcond':TVB_Elcond, 'Seebeck':TVB_Seebeck, 'Lorenz':TVB_Lorenz, \
+                                     'Ekappa':TVB_Ekappa, 'Hallcoeff':TVB_Hallcoeff, 'PF':TVB_PF}                
+
 
         if mode == 'doping':
             mu = np.arange(-self.bandgap/2, -self.bandgap/2 + 1.0, 0.0005)
-            self.data['CBM']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Mobility'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Density'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Elcond'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['PF'] = np.zeros((len(Temp), len(doping)))
-            self.data['CBM']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Mobility'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Density'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Elcond'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['PF'] = np.zeros((len(Temp), len(doping)))
-            self.data['VBM']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-            
             self.Get_CBM()
             self.Get_VBM()
             if ifSB:
                 self.Get_SB()
-            Get_transport(self.CBM, filepath)
-            Get_transport(self.VBM, filepath)
             
+            self.CBM.Get_carridensity(filepath)
+            self.VBM.Get_carridensity(filepath)
             if hasattr(self, 'CSB'):
-                self.data['CSB']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Mobility'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Density'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Elcond'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['PF'] = np.zeros((len(Temp), len(doping)))
-                self.data['CSB']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Mobility'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Density'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Elcond'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['PF'] = np.zeros((len(Temp), len(doping)))
-                self.data['TCB']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-                Get_transport(self.CSB, filepath)
                 gap_csb = self.CSB.bandgap - self.CBM.bandgap
-                cmu_x = find_mu_doping2(self.CBM, self.CSB, doping, mu, Temp)
-                self.cmu_x = cmu_x
+                self.CSB.Get_carridensity(filepath)
+                cmux_array = find_mu_doping2(self.CBM, self.CSB, doping, mu, Temp)
+                csmux_array=list()
+                for i, T in enumerate(Temp):
+                    temporary = cmux_array[i,:] - gap_csb/(EBoltzm*T)
+                    csmux_array.append(temporary)
+                csmux_array = np.array(csmux_array)
+                (CBM_AcoRelaxT, CBM_OptRelaxT, CBM_ImpRelaxT, CBM_TotalRelaxT, CBM_Density, CBM_Mobility,\
+                 CBM_Elcond, CBM_Seebeck, CBM_Lorenz, CBM_Ekappa, CBM_Hallfactor, CBM_Hallcoeff, CBM_PF) = self.CBM.Get_transport_para(filepath, cmux_array, Temp)
+                (CSB_AcoRelaxT, CSB_OptRelaxT, CSB_ImpRelaxT, CSB_TotalRelaxT, CSB_Density, CSB_Mobility,\
+                 CSB_Elcond, CSB_Seebeck, CSB_Lorenz, CSB_Ekappa, CSB_Hallfactor, CSB_Hallcoeff, CSB_PF) = self.CSB.Get_transport_para(filepath, csmux_array, Temp)
+                TCB_Density = CBM_Density + CSB_Density
+                TCB_Elcond = CBM_Elcond + CSB_Elcond
+                TCB_Mobility = TCB_Elcond / (C_e * TCB_Density)
+                TCB_Seebeck = (CBM_Seebeck * CBM_Elcond + CSB_Seebeck * CSB_Elcond ) / TCB_Elcond
+                TCB_Lorenz = (CBM_Lorenz * CBM_Elcond + CSB_Lorenz * CSB_Elcond) / TCB_Elcond
+                TCB_Ekappa = np.array([TCB_Lorenz[i] * TCB_Elcond[i] * T for i, T in enumerate(Temp)]) 
+                TCB_Hallcoeff = (CBM_Hallfactor * CBM_Mobility * CBM_Elcond + CSB_Hallfactor * CSB_Mobility * CSB_Elcond) / (TCB_Elcond)**2
+                TCB_PF = TCB_Seebeck**2 * TCB_Elcond
+                self.data['CBM'] = {'TotalRelaxT':CBM_TotalRelaxT, 'AcoRelaxT':CBM_AcoRelaxT, 'OptRelaxT':CBM_OptRelaxT, 'ImpRelaxT':CBM_ImpRelaxT, \
+                                     'Mobility':CBM_Mobility, 'Density':CBM_Density, 'Elcond':CBM_Elcond, 'Seebeck':CBM_Seebeck, 'Lorenz':CBM_Lorenz, \
+                                     'Ekappa':CBM_Ekappa, 'Hallcoeff':CBM_Hallcoeff, 'PF':CBM_PF}
+                self.data['CSB'] = {'TotalRelaxT':CSB_TotalRelaxT, 'AcoRelaxT':CSB_AcoRelaxT, 'OptRelaxT':CSB_OptRelaxT, 'ImpRelaxT':CSB_ImpRelaxT, \
+                                     'Mobility':CSB_Mobility, 'Density':CSB_Density, 'Elcond':CSB_Elcond, 'Seebeck':CSB_Seebeck, 'Lorenz':CSB_Lorenz, \
+                                     'Ekappa':CSB_Ekappa, 'Hallcoeff':CSB_Hallcoeff, 'PF':CSB_PF}
+                self.data['TCB'] = {'Mobility':TCB_Mobility, 'Density':TCB_Density, 'Elcond':TCB_Elcond, 'Seebeck':TCB_Seebeck, 'Lorenz':TCB_Lorenz, \
+                                     'Ekappa':TCB_Ekappa, 'Hallcoeff':TCB_Hallcoeff, 'PF':TCB_PF}
+                
             else:
-                cmu_x = find_mu_doping(self.CBM, doping, mu, Temp)
-                self.cmu_x = cmu_x
+                cmux_array = find_mu_doping(self.CBM, doping, mu, Temp)
+                (CBM_AcoRelaxT, CBM_OptRelaxT, CBM_ImpRelaxT, CBM_TotalRelaxT, CBM_Density, CBM_Mobility,\
+                 CBM_Elcond, CBM_Seebeck, CBM_Lorenz, CBM_Ekappa, CBM_Hallfactor, CBM_Hallcoeff, CBM_PF) = self.CBM.Get_transport_para(filepath, cmux_array, Temp)
+                self.data['CBM'] = {'TotalRelaxT':CBM_TotalRelaxT, 'AcoRelaxT':CBM_AcoRelaxT, 'OptRelaxT':CBM_OptRelaxT, 'ImpRelaxT':CBM_ImpRelaxT, \
+                                     'Mobility':CBM_Mobility, 'Density':CBM_Density, 'Elcond':CBM_Elcond, 'Seebeck':CBM_Seebeck, 'Lorenz':CBM_Lorenz, \
+                                     'Ekappa':CBM_Ekappa, 'Hallcoeff':CBM_Hallcoeff, 'PF':CBM_PF}
                 
             if hasattr(self, 'VSB'):
-                self.data['VSB']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Mobility'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Density'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Elcond'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['PF'] = np.zeros((len(Temp), len(doping)))
-                self.data['VSB']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['TotalRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['AcoRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['OptRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['ImpRelaxT'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Density'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Elcond'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Mobility'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Seebeck'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Lorenz'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Ekappa'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['PF'] = np.zeros((len(Temp), len(doping)))
-                self.data['TVB']['Hallcoeff'] = np.zeros((len(Temp), len(doping)))
-                Get_transport(self.VSB, filepath)
                 gap_vsb = self.VSB.bandgap - self.VBM.bandgap
-                vmu_x = find_mu_doping2(self.VBM, self.VSB, doping, mu, Temp)
-                self.vmu_x = vmu_x
-            else:
-                vmu_x = find_mu_doping(self.VBM, doping, mu, Temp)
-                self.vmu_x = vmu_x
+                self.VSB.Get_carridensity(filepath)
+                vmux_array = find_mu_doping2(self.VBM, self.VSB, doping, mu, Temp)
+                vsmux_array=list()
+                for i, T in enumerate(Temp):
+                    temporary = vmux_array[i,:] - gap_vsb/(EBoltzm*T)
+                    vsmux_array.append(temporary)
+                vsmux_array = np.array(vsmux_array)
+                (VBM_AcoRelaxT, VBM_OptRelaxT, VBM_ImpRelaxT, VBM_TotalRelaxT, VBM_Density, VBM_Mobility,\
+                 VBM_Elcond, VBM_Seebeck, VBM_Lorenz, VBM_Ekappa, VBM_Hallfactor, VBM_Hallcoeff, VBM_PF) = self.VBM.Get_transport_para(filepath, vmux_array, Temp)
+                (VSB_AcoRelaxT, VSB_OptRelaxT, VSB_ImpRelaxT, VSB_TotalRelaxT, VSB_Density, VSB_Mobility,\
+                 VSB_Elcond, VSB_Seebeck, VSB_Lorenz, VSB_Ekappa, VSB_Hallfactor, VSB_Hallcoeff, VSB_PF) = self.VSB.Get_transport_para(filepath, vsmux_array, Temp)
+                TVB_Density = VBM_Density + VSB_Density
+                TVB_Elcond = VBM_Elcond + VSB_Elcond
+                TVB_Mobility = TVB_Elcond / (C_e * TVB_Density)
+                TVB_Seebeck = (VBM_Seebeck * VBM_Elcond + VSB_Seebeck * VSB_Elcond ) / TVB_Elcond
+                TVB_Lorenz = (VBM_Lorenz * VBM_Elcond + VSB_Lorenz * VSB_Elcond) / TVB_Elcond
+                TVB_Ekappa = np.array([TVB_Lorenz[i] * TVB_Elcond[i] * T for i, T in enumerate(Temp)]) 
+                TVB_Hallcoeff = (VBM_Hallfactor * VBM_Mobility * VBM_Elcond + VSB_Hallfactor * VSB_Mobility * VSB_Elcond) / (TVB_Elcond)**2
+                TVB_PF = TVB_Seebeck**2 * TVB_Elcond 
+                self.data['VBM'] = {'TotalRelaxT':VBM_TotalRelaxT, 'AcoRelaxT':VBM_AcoRelaxT, 'OptRelaxT':VBM_OptRelaxT, 'ImpRelaxT':VBM_ImpRelaxT, \
+                                     'Mobility':VBM_Mobility, 'Density':VBM_Density, 'Elcond':VBM_Elcond, 'Seebeck':VBM_Seebeck, 'Lorenz':VBM_Lorenz, \
+                                     'Ekappa':VBM_Ekappa, 'Hallcoeff':VBM_Hallcoeff, 'PF':VBM_PF}
+                self.data['VSB'] = {'TotalRelaxT':VSB_TotalRelaxT, 'AcoRelaxT':VSB_AcoRelaxT, 'OptRelaxT':VSB_OptRelaxT, 'ImpRelaxT':VSB_ImpRelaxT, \
+                                     'Mobility':VSB_Mobility, 'Density':VSB_Density, 'Elcond':VSB_Elcond, 'Seebeck':VSB_Seebeck, 'Lorenz':VSB_Lorenz, \
+                                     'Ekappa':VSB_Ekappa, 'Hallcoeff':VSB_Hallcoeff, 'PF':VSB_PF}
+                self.data['TVB'] = {'Mobility':TVB_Mobility, 'Density':TVB_Density, 'Elcond':TVB_Elcond, 'Seebeck':TVB_Seebeck, 'Lorenz':TVB_Lorenz, \
+                                     'Ekappa':TVB_Ekappa, 'Hallcoeff':TVB_Hallcoeff, 'PF':TVB_PF}
                 
-            for i, T in enumerate(Temp):
-                for j, dope in enumerate(doping):
-                    self.data['CBM']['TotalRelaxT'][i,j] = self.CBM.RT.Totaltime(cmu_x[i,j], T)
-                    self.data['CBM']['AcoRelaxT'][i,j] = self.CBM.RT.ACO.Avgacotime(cmu_x[i,j], T)
-                    self.data['CBM']['OptRelaxT'][i,j] = self.CBM.RT.OPT.Avgopttime(cmu_x[i,j], T)
-                    self.data['CBM']['ImpRelaxT'][i,j] = self.CBM.RT.IMP.Avgimptime(cmu_x[i,j], T)
-                    self.data['CBM']['Mobility'][i,j] = self.CBM.Mobility(cmu_x[i,j], T)
-                    self.data['CBM']['Density'][i,j] = self.CBM.Density(cmu_x[i,j], T)
-                    self.data['CBM']['Elcond'][i,j] = self.CBM.Elcond(cmu_x[i,j], T)
-                    self.data['CBM']['Seebeck'][i,j] = self.CBM.Seebeck.seebeck(cmu_x[i,j], T)
-                    self.data['CBM']['Lorenz'][i,j] = self.CBM.Ekappa.lorenz(cmu_x[i,j], T)
-                    self.data['CBM']['Ekappa'][i,j] = self.CBM.Ekappa.ekappa(cmu_x[i,j], T)
-                    self.data['CBM']['PF'][i,j] = self.data['CBM']['Seebeck'][i,j]**2 * self.data['CBM']['Elcond'][i,j]
-                    self.data['CBM']['Hallcoeff'][i,j] = self.CBM.Hallcoeff.hallcoeff(cmu_x[i,j], T)
-                    self.data['VBM']['TotalRelaxT'][i,j] = self.VBM.RT.Totaltime(vmu_x[i,j], T)
-                    self.data['VBM']['AcoRelaxT'][i,j] = self.VBM.RT.ACO.Avgacotime(vmu_x[i,j], T)
-                    self.data['VBM']['OptRelaxT'][i,j] = self.VBM.RT.OPT.Avgopttime(vmu_x[i,j], T)
-                    self.data['VBM']['ImpRelaxT'][i,j] = self.VBM.RT.IMP.Avgimptime(vmu_x[i,j], T)
-                    self.data['VBM']['Mobility'][i,j] = self.VBM.Mobility(vmu_x[i,j], T)
-                    self.data['VBM']['Density'][i,j] = self.VBM.Density(vmu_x[i,j], T)
-                    self.data['VBM']['Elcond'][i,j] = self.VBM.Elcond(vmu_x[i,j], T)
-                    self.data['VBM']['Seebeck'][i,j] = self.VBM.Seebeck.seebeck(vmu_x[i,j], T)
-                    self.data['VBM']['Lorenz'][i,j] = self.VBM.Ekappa.lorenz(vmu_x[i,j], T)
-                    self.data['VBM']['Ekappa'][i,j] = self.VBM.Ekappa.ekappa(vmu_x[i,j], T)
-                    self.data['VBM']['Hallcoeff'][i,j] = self.VBM.Hallcoeff.hallcoeff(vmu_x[i,j], T)
-                    self.data['VBM']['PF'][i,j] = self.data['VBM']['Seebeck'][i,j]**2 * self.data['VBM']['Elcond'][i,j]
-                    if hasattr(self, 'CSB'):
-                        self.data['CSB']['TotalRelaxT'][i,j] = self.CSB.RT.Totaltime(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['AcoRelaxT'][i,j] = self.CSB.RT.ACO.Avgacotime(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['OptRelaxT'][i,j] = self.CSB.RT.OPT.Avgopttime(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['ImpRelaxT'][i,j] = self.CSB.RT.IMP.Avgimptime(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Mobility'][i,j] = self.CSB.Mobility(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Density'][i,j] = self.CSB.Density(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Elcond'][i,j] = self.CSB.Elcond(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Seebeck'][i,j] = self.CSB.Seebeck.seebeck(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Lorenz'][i,j] = self.CSB.Ekappa.lorenz(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Ekappa'][i,j] = self.CSB.Ekappa.ekappa(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['Hallcoeff'][i,j] = self.CSB.Hallcoeff.hallcoeff(cmu_x[i,j] - gap_csb/(EBoltzm * T), T)
-                        self.data['CSB']['PF'][i,j] = self.data['CSB']['Seebeck'][i,j]**2 * self.data['CSB']['Elcond'][i,j]
-                        self.data['TCB']['Density'][i,j] = self.data['CBM']['Density'][i,j] + self.data['CSB']['Density'][i,j]
-                        self.data['TCB']['Elcond'][i,j] = self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Elcond'][i,j]
-                        self.data['TCB']['Mobility'][i,j] = self.data['TCB']['Elcond'][i,j] / (C_e * self.data['TCB']['Density'][i,j])
-                        self.data['TCB']['Seebeck'][i,j] = (self.data['CBM']['Seebeck'][i,j] * self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Seebeck'][i,j] * self.data['CSB']['Elcond'][i,j]) / (self.data['CBM']['Elcond'][i,j]+self.data['CSB']['Elcond'][i,j])
-                        self.data['TCB']['Lorenz'][i,j] = (self.data['CBM']['Lorenz'][i,j] * self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Lorenz'][i,j] * self.data['CSB']['Elcond'][i,j]) / (self.data['CBM']['Elcond'][i,j]+self.data['CSB']['Elcond'][i,j])
-                        self.data['TCB']['Ekappa'][i,j] = self.data['TCB']['Lorenz'][i,j] * self.data['TCB']['Elcond'][i,j] * T
-                        self.data['TCB']['Hallcoeff'][i,j] = (self.CBM.Hallcoeff.A(cmu_x[i,j], T) * self.data['CBM']['Mobility'][i,j] * self.data['CBM']['Elcond'][i,j] + self.CSB.Hallcoeff.A(cmu_x[i,j] - gap_csb/(EBoltzm * T), T) * self.data['CSB']['Mobility'][i,j] * self.data['CSB']['Elcond'][i,j]) \
-                                                             / (self.data['CBM']['Elcond'][i,j] + self.data['CSB']['Elcond'][i,j])**2
-                        self.data['TCB']['PF'][i,j] = self.data['TCB']['Seebeck'][i,j]**2 * self.data['TCB']['Elcond'][i,j]
-                    if hasattr(self, 'VSB'):
-                        self.data['VSB']['TotalRelaxT'][i,j] = self.VSB.RT.Totaltime(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['AcoRelaxT'][i,j] = self.VSB.RT.ACO.Avgacotime(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['OptRelaxT'][i,j] = self.VSB.RT.OPT.Avgopttime(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['ImpRelaxT'][i,j] = self.VSB.RT.IMP.Avgimptime(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Mobility'][i,j] = self.VSB.Mobility(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Density'][i,j] = self.VSB.Density(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Elcond'][i,j] = self.VSB.Elcond(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Seebeck'][i,j] = self.VSB.Seebeck.seebeck(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Lorenz'][i,j] = self.VSB.Ekappa.lorenz(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Ekappa'][i,j] = self.VSB.Ekappa.ekappa(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['Hallcoeff'][i,j] = self.VSB.Hallcoeff.hallcoeff(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T)
-                        self.data['VSB']['PF'][i,j] = self.data['VSB']['Seebeck'][i,j]**2 * self.data['VSB']['Elcond'][i,j]
-                        self.data['TVB']['Density'][i,j] = self.data['VBM']['Density'][i,j] + self.data['VSB']['Density'][i,j]
-                        self.data['TVB']['Elcond'][i,j] = self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Elcond'][i,j]
-                        self.data['TVB']['Mobility'][i,j] = self.data['TVB']['Elcond'][i,j] / (C_e * self.data['TVB']['Density'][i,j])
-                        self.data['TVB']['Seebeck'][i,j] = (self.data['VBM']['Seebeck'][i,j] * self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Seebeck'][i,j] * self.data['VSB']['Elcond'][i,j]) / (self.data['VBM']['Elcond'][i,j]+self.data['VSB']['Elcond'][i,j])
-                        self.data['TVB']['Lorenz'][i,j] = (self.data['VBM']['Lorenz'][i,j] * self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Lorenz'][i,j] * self.data['VSB']['Elcond'][i,j]) / (self.data['VBM']['Elcond'][i,j]+self.data['VSB']['Elcond'][i,j])
-                        self.data['TVB']['Ekappa'][i,j] = self.data['TVB']['Lorenz'][i,j] * self.data['TVB']['Elcond'][i,j] * T
-                        self.data['TVB']['Hallcoeff'][i,j] = (self.VBM.Hallcoeff.A(vmu_x[i,j], T) * self.data['VBM']['Mobility'][i,j] * self.data['VBM']['Elcond'][i,j] + self.VSB.Hallcoeff.A(vmu_x[i,j] - gap_vsb/(EBoltzm * T), T) * self.data['VSB']['Mobility'][i,j] * self.data['VSB']['Elcond'][i,j]) \
-                                                             / (self.data['VBM']['Elcond'][i,j] + self.data['VSB']['Elcond'][i,j])**2
-                        self.data['TVB']['PF'][i,j] = self.data['TVB']['Seebeck'][i,j]**2 * self.data['TVB']['Elcond'][i,j]
+            else:
+                vmux_array = find_mu_doping(self.VBM, doping, mu, Temp)
+                (VBM_AcoRelaxT, VBM_OptRelaxT, VBM_ImpRelaxT, VBM_TotalRelaxT, VBM_Density, VBM_Mobility,\
+                 VBM_Elcond, VBM_Seebeck, VBM_Lorenz, VBM_Ekappa, VBM_Hallfactor, VBM_Hallcoeff, VBM_PF) = self.VBM.Get_transport_para(filepath, vmux_array, Temp)
+                self.data['VBM'] = {'TotalRelaxT':VBM_TotalRelaxT, 'AcoRelaxT':VBM_AcoRelaxT, 'OptRelaxT':VBM_OptRelaxT, 'ImpRelaxT':VBM_ImpRelaxT, \
+                                     'Mobility':VBM_Mobility, 'Density':VBM_Density, 'Elcond':VBM_Elcond, 'Seebeck':VBM_Seebeck, 'Lorenz':VBM_Lorenz, \
+                                     'Ekappa':VBM_Ekappa, 'Hallcoeff':VBM_Hallcoeff, 'PF':VBM_PF}
+
+            
 #####################################################################################################################################################################                    
     def Output(self, Temp, doping, mode):
         ''' 

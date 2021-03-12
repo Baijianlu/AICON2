@@ -442,7 +442,7 @@ class MyPhononFW(Firework):
 
 class CalPhonCondFW(Firework):
     def __init__(self, structure=None, name="thermal conductivity", db_file=DB_FILE, 
-                 parents=None, Temp=None, supercell=None, **kwargs):
+                 parents=None, Temp=None, ifscale=None, supercell=None, **kwargs):
         """
         lattice thermal conductivity calculation firework
         
@@ -452,6 +452,7 @@ class CalPhonCondFW(Firework):
             db_file (str): Path to file specifying db credentials.
             parents (Firework): Parents of this particular Firework. FW or list of FWS.
             Temp (list): Temperature value array.
+            ifscale (bool): If multiply a scaling factor with Kappa.
             supercell (list): size of supercell.
             \*\*kwargs: Other kwargs that are passed to Firework.__init__.
             
@@ -461,7 +462,7 @@ class CalPhonCondFW(Firework):
         t = []
         
         t.append(BuildPhonopyDir(supercell=supercell))
-        t.append(RunAICONForPhon(Temp=Temp))
+        t.append(RunAICONForPhon(Temp=Temp, ifscale=ifscale))
         t.append(PassCalcLocs(name=name))
         
         super(CalPhonCondFW, self).__init__(t, parents=parents, name=fw_name, **kwargs)

@@ -105,7 +105,7 @@ def wf_electron_conductivity(structure, vasp_input_set_relax=None, vasp_input_se
 
 
 def wf_phonon_conductivity(structure, vasp_input_set_relax=None, vasp_input_set_fixvol_relax=None, vasp_input_set_dfpt=None, vasp_kpoint_set=None, 
-                           vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", Temp=None, supercell=None):
+                           vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", Temp=None, ifscale=None, supercell=None):
     """ This workflow aims to calculate lattice thermal conductivity of the structure. """
     
     fws = []
@@ -137,7 +137,7 @@ def wf_phonon_conductivity(structure, vasp_input_set_relax=None, vasp_input_set_
     fws.append(fw_dfpt_minus)     #5
     fws.append(fw_dfpt_plus)      #6
     # get band.yaml and gruneisen.yaml
-    fw_phoncond = CalPhonCondFW(structure=structure, Temp=Temp, supercell=supercell, name="thermal conductivity",
+    fw_phoncond = CalPhonCondFW(structure=structure, Temp=Temp, ifscale=ifscale, supercell=supercell, name="thermal conductivity",
                                 db_file=db_file, parents=fws[3:6], spec={"_queueadapter": {"job_name": 'AICON'}})
     fws.append(fw_phoncond)
     
