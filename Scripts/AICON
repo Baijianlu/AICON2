@@ -32,6 +32,7 @@ def get_parser():
     parser.add_argument("--dope_step", dest="dope_step", type=float, help="Calculated concentration step")
     parser.add_argument("--highpath", dest="highpath", action="store_true", help="Obtain high-symmetry path")
     parser.add_argument("--noSB", dest="noSB", action="store_true", help="Disable second band calculation")
+    parser.add_argument("--scale", dest="scale", action="store_true", help="If multiply a scaling factor with Kappa")
     
     return parser
 
@@ -44,10 +45,10 @@ def Get_Electron(filepath, Temp, dope, mode, ifSB):
     Compound.Output(Temp, dope, mode)
 
     
-def Get_Phonon(filepath, Temp):
+def Get_Phonon(filepath, Temp, ifscale):
     '''For lattice thermal conductivity calculation '''
     kappa = Phonon(filepath)
-    kappa.Get_Kappa(filepath, Temp)
+    kappa.Get_Kappa(filepath, Temp, ifscale)
     kappa.Output(Temp)
     
 
@@ -98,7 +99,12 @@ if __name__ == '__main__':
         else:
             raise ValueError("Temperature or temperature range must be specified!")
 
-        Get_Phonon("./", Temp)
+        if args.scale:
+            ifscale = True
+        else:
+            ifscale = False
+            
+        Get_Phonon("./", Temp, ifscale)
         
     else:
         raise ValueError("Must specify electron or phonon calculation!")    
