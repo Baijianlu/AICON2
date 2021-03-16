@@ -47,7 +47,6 @@ class Seebeck(object):
         fun2 = lambda z, x, T: 1e14 * self.Totaltime(z, T) * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
         self.integfun2 = lambda x, T: quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
-#        self.seebeck = lambda x, T: Boltzm / C_e * quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
 
     def Get_seebeck_P(self):
         ''' Calculate Seebeck coefficient with parabolic approximation. '''
