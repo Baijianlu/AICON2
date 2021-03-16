@@ -51,7 +51,6 @@ class Hallcoeff(object):
         
         fun1 = lambda z, x, T: (1e14 * self.Totaltime(z, T))**2 * (-self.RelaxT.DfermidistrFun(z,x)) * self.RelaxT.ACO.Moment(z, T)**3 / (1 + 2 * self.RelaxT.Beta(T) * z)**2
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
-#        self.A = lambda x, T: self.A_K * quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * quad(fun3, 0, Upperlimit(x), args=(x, T))[0] / (quad(fun1, 0, Upperlimit(x), args=(x, T))[0])**2
 
     def Get_A_P(self):
         ''' Calculate Hall factor with parabolic approximation. '''
