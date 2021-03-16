@@ -149,9 +149,6 @@ class AcoRelaxTime(RelaxTime):
         self.integfun2 = lambda x, T: quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
         self.integfun4 = lambda x, T: quad(fun4, 0, Upperlimit(x), args=(x, T))[0]
         self.integfun5 = lambda x, T: quad(fun5, 0, Upperlimit(x), args=(x, T))[0]
-#        self.Avgacotime2 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * 1e-14
-#        self.Avgacotime = lambda x, T: quad(fun4, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * 1e-14
-#        self.Avgeffmass = lambda x, T: quad(fun5, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
     
     def Get_values(self, x, T):
         Moment = self.integfun2(x, T)
@@ -185,8 +182,6 @@ class AcoRelaxTime_Para(RelaxTime):
         fun2 = lambda z, x, T: (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
         self.integfun2 = lambda x, T: quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
-#        self.Avgacotime = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * 1e-14
-#        self.Avgeffmass = lambda x, T: np.abs(self.EMC.condeffmass)
         
     def Get_values(self, x, T):
         Moment = self.integfun2(x, T)
@@ -226,7 +221,6 @@ class OptRelaxTime(RelaxTime):
         fun1 = lambda z, x, T: 1e14 * self.Opttime(z, T) * (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3 
 #        fun2 = lambda z, x, T: (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
-#        self.Avgopttime = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * 1e-14
     
     def Get_values(self, x, T, Moment):
         Avgtime = self.integfun1(x, T) / Moment * 1e-14
@@ -264,7 +258,6 @@ class OptRelaxTime_Para(RelaxTime):
         fun1 = lambda z, x, T: 1e14 * self.Opttime(z, T) * (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3 
 #        fun2 = lambda z, x, T: (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
-#        self.Avgopttime = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0] * 1e-14
         
     def Get_values(self, x, T, Moment):
         Avgtime = self.integfun1(x, T) / Moment * 1e-14
@@ -277,18 +270,14 @@ class ImpurityRelaxTime(RelaxTime):
     def Get_DOSfun(self):
         self.doseffmass = self.N**(2/3) * self.EMC.doseffmass 
         self.DOS = lambda z, T: 2**(1/2) * np.abs(self.doseffmass * m_e)**(3/2) / (np.pi**2 * EPlanck**3) * (z * EBoltzm * T)**(1/2) \
-        * (1 + 2 * z * self.Beta(T)) * (1 + z * self.Beta(T))**(1/2)                                                                                    #here I omit the constant EtoJoul^3/2
-#        self.Density = lambda x, T: EtoJoul**(3/2) * (2 * np.abs(self.doseffmass) * m_e * EBoltzm * T)**(3/2) / (3 * np.pi**2 * EPlanck**3) \
-#        * self.integral(x, T, 0, 3/2, 0)     
+        * (1 + 2 * z * self.Beta(T)) * (1 + z * self.Beta(T))**(1/2)                                                                                    #here I omit the constant EtoJoul^3/2 
     
     def Get_AvgDOS(self, filepath):
         self.Get_effemass(filepath)
         self.Get_DOSfun()
         self.Get_moment()
         fun1 = lambda z, x, T: self.DOS(z, T) * (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
-#        fun2 = lambda z, x, T: (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
-#        self.AvgDOS = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
         
     def Get_scrad(self, filepath):  
         self.Get_AvgDOS(filepath)
@@ -306,12 +295,6 @@ class ImpurityRelaxTime(RelaxTime):
     def Get_Imptime(self, filepath):
         self.Get_AvgDOS(filepath)
         self.Get_dielconst(filepath + "dielect/")
-#        self.Get_delta(filepath)
-#        self.Imptime_2 = lambda x, T: 1 / (EtoJoul**3 * 2 * C_e**4 * self.N * np.abs(self.EMC.doseffmass) * m_e * (1 + 2 * x * self.Beta(T)) \
-#                                         * (np.log(1 + 1/self.Delta_2(x, T)) - (1 + self.Delta_2(x, T))**(-1)) \
-#                                         / (3 * np.pi * self.Diel.static**2 * EPlanck**3))
-#        
-#        self.Avgimptime = self.Imptime_2
         
     def Get_values(self, x, T, Moment, Density):
         AvgDOS = self.integfun1(x, T) / Moment
@@ -332,18 +315,14 @@ class ImpurityRelaxTime_Para(RelaxTime):
         
     def Get_DOSfun(self):
         self.doseffmass = self.N**(2/3) * self.EMC.doseffmass 
-        self.DOS = lambda z, T: 2**(1/2) * np.abs(self.doseffmass * m_e)**(3/2) / (np.pi**2 * EPlanck**3) * (z * EBoltzm * T)**(1/2)                                    #here I omit the constant EtoJoul^3/2
-#        self.Density = lambda x, T: EtoJoul**(3/2) * 2**(1/2) * (np.abs(self.doseffmass) * m_e * EBoltzm * T)**(3/2) / (np.pi**2 * EPlanck**3) \
-#        * self.Fermiintegral(x, 1/2)     
+        self.DOS = lambda z, T: 2**(1/2) * np.abs(self.doseffmass * m_e)**(3/2) / (np.pi**2 * EPlanck**3) * (z * EBoltzm * T)**(1/2)                                    #here I omit the constant EtoJoul^3/2     
     
     def Get_AvgDOS(self, filepath):
         self.Get_effemass(filepath)
         self.Get_DOSfun()
         self.Get_moment()
         fun1 = lambda z, x, T: self.DOS(z, T) * (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
-#        fun2 = lambda z, x, T: (-self.DfermidistrFun(z,x)) * self.Moment(z, T)**3
         self.integfun1 = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0]
-#        self.AvgDOS = lambda x, T: quad(fun1, 0, Upperlimit(x), args=(x, T))[0] / quad(fun2, 0, Upperlimit(x), args=(x, T))[0]
             
     def Get_scrad(self, filepath):  
         self.Get_AvgDOS(filepath)
@@ -361,12 +340,6 @@ class ImpurityRelaxTime_Para(RelaxTime):
     def Get_Imptime(self, filepath):
         self.Get_AvgDOS(filepath)
         self.Get_dielconst(filepath + "dielect/")
-#        self.Get_delta(filepath)
-#        self.Imptime_2 = lambda x, T: 1 / (EtoJoul**3 * 2 * C_e**4 * self.N * np.abs(self.EMC.doseffmass) * m_e * (1 + 2 * x * self.Beta(T)) \
-#                                         * (np.log(1 + 1/self.Delta_2(x, T)) - (1 + self.Delta_2(x, T))**(-1)) \
-#                                         / (3 * np.pi * self.Diel.static**2 * EPlanck**3))
-# 
-#        self.Avgimptime = self.Imptime_2
         
     def Get_values(self, x, T, Moment, Density):
         AvgDOS = self.integfun1(x, T) / Moment
