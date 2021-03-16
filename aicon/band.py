@@ -126,14 +126,14 @@ class Band(object):
             self.Get_relaxtime(filepath)
             
         self.Ekappa = Ekappa(self.flag, self.RT)
-        self.Ekappa.Get_ekappa(self.Elcond, ACO = True, OPT = True, IMP = False)                            #unit: W/m*K
+        self.Ekappa.Get_ekappa(ACO = True, OPT = True, IMP = False)                            #unit: W/m*K
                 
     def Get_hallcoeff(self, filepath):
         if not hasattr(self, 'RT'):        
             self.Get_relaxtime(filepath)
             
         self.Hallcoeff = Hallcoeff(self.flag, self.RT)
-        self.Hallcoeff.Get_hallcoeff(self.Density, ACO = True, OPT = True, IMP = False)                     #unit: m^3/C
+        self.Hallcoeff.Get_hallcoeff(ACO = True, OPT = True, IMP = False)                     #unit: m^3/C
             
     def Get_transport_para(self, filepath, mu, Temp):
         '''Calculate electronic transport parameters and return the values. '''
