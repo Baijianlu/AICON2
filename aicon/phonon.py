@@ -147,39 +147,34 @@ class Phonon(object):
 
         for k in np.arange(len(Temp)):
             T = Temp[k]
-            for branch in np.arange(4):                                          # three acoustic branch and one optic branch
-                if branch == 0 or branch == 1:                                   # two transverse acostic branch
+            for branch in np.arange(4):                                          
+                if branch == 0 or branch == 1:                                   # two transverse acoustic branches
                     coef_TU = t_Umklapp(self.gruneisen[branch],self.velocity[branch],self.DebyeT[branch],self.M_avg,T)
                     coef_TN = t_Normal(self.gruneisen[branch], self.velocity[branch], self.M_avg, self.V_avg, T)
                     coef_TISO = t_Isotope(self.velocity[branch], self.V_avg, self.abund, T)
                     C_T = constC(self.velocity[branch])
                     IT_1 = C_T * T**3 * quad(get_fun1, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0]
-#                    print(quad(get_fun1, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO)))
                     BettaT_1 = quad(get_fun2, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0]
-#                    print(quad(get_fun2, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO)))
                     BettaT_2 = quad(get_fun3, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0]
-#                    print(quad(get_fun3, 0.0, self.DebyeT[branch]/T, args=(coef_TN,coef_TU,coef_TISO))[0])
                     IT_2 = C_T * T**3 * BettaT_1**2/BettaT_2
                     self.kappa[k, branch] = 1/3 * (IT_1 + IT_2)
                     self.relaxtime[k, branch, 0] = 1 / (coef_TN * self.DebyeT[branch]/T)
                     self.relaxtime[k, branch, 1] = 1 / (coef_TU * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 2] = 1 / (coef_TISO * (self.DebyeT[branch]/T)**4)
-                elif branch == 2:
+                elif branch == 2:                                               # one longitudinal acoustic branch
                     coef_LU = t_Umklapp(self.gruneisen[branch],self.velocity[branch],self.DebyeT[branch],self.M_avg,T)
                     coef_LN = t_Normal(self.gruneisen[branch],self.velocity[branch],self.M_avg,self.V_avg,T)
                     coef_LISO = t_Isotope(self.velocity[branch],self.V_avg,self.abund,T)
                     C_L = constC(self.velocity[branch])
                     IL_1 = C_L * T**3 * quad(get_fun4, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO))[0]
-#                    print(quad(get_fun4, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO)))
                     BettaL_1 = quad(get_fun5, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO))[0]
-#                    print(quad(get_fun5, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO)))
                     BettaL_2 = quad(get_fun6, 0.0, self.DebyeT[branch]/T, args=(coef_LN,coef_LU,coef_LISO))[0]
                     IL_2 = C_L * T**3 * BettaL_1**2/BettaL_2
                     self.kappa[k, branch] = 1/3 * (IL_1 + IL_2)
                     self.relaxtime[k, branch, 0] = 1 / (coef_LN * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 1] = 1 / (coef_LU * (self.DebyeT[branch]/T)**2)
                     self.relaxtime[k, branch, 2] = 1 / (coef_LISO * (self.DebyeT[branch]/T)**4)
-                else:
+                else:                                                              # optical branches
                     coef_OU = t_Umklapp(self.gruneisen[branch],self.velocity[branch],self.DebyeT[branch],self.M_avg,T)
                     coef_ON = t_Normal(self.gruneisen[branch],self.velocity[branch],self.M_avg,self.V_avg,T)
                     coef_OISO = t_Isotope(self.velocity[branch],self.V_avg,self.abund,T)
