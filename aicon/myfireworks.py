@@ -23,7 +23,7 @@
 from atomate.vasp.config import HALF_KPOINTS_FIRST_RELAX, RELAX_MAX_FORCE, \
     VASP_CMD, DB_FILE
 from fireworks import Firework
-from pymatgen import Structure
+from pymatgen.core import Structure
 from pymatgen.io.vasp.sets import MPRelaxSet, MPStaticSet
 from atomate.common.firetasks.glue_tasks import PassCalcLocs
 from atomate.vasp.firetasks.glue_tasks import CopyVaspOutputs, pass_vasp_result

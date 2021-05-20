@@ -23,7 +23,7 @@
 import os
 import numpy as np
 from fireworks import explicit_serialize, FiretaskBase, FWAction
-from pymatgen import Structure
+from pymatgen.core import Structure
 from pymatgen.io.vasp.inputs import Incar
 from pymatgen.io.vasp.outputs import Oszicar,VaspParserError
 from pymatgen.io.vasp.sets import MPStaticSet, MPNonSCFSet, MPRelaxSet

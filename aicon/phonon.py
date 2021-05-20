@@ -73,11 +73,11 @@ class Phonon(object):
     ''' Phonon related properties class. '''
     
     def __init__(self, filepath):
-        self.struct = pmg.Structure.from_file(filepath + 'POSCAR')
+        self.struct = pmg.core.Structure.from_file(filepath + 'POSCAR')
         self.M_avg = 0.0
         
         for ele in self.struct.symbol_set:
-            self.M_avg = self.M_avg + pmg.Element(ele).atomic_mass * self.struct.composition.get_atomic_fraction(ele)
+            self.M_avg = self.M_avg + pmg.core.Element(ele).atomic_mass * self.struct.composition.get_atomic_fraction(ele)
     
         self.M_avg = atommass * self.M_avg             
         self.V_avg = self.struct.volume/self.struct.composition.num_atoms * 1e-30  

@@ -50,7 +50,7 @@ class ElasticConst(object):
         self.value_2 = self.tensor[0,1] + 2*self.tensor[3,3] + 3/5 * (self.tensor[0,0] - self.tensor[0,1] - 2*self.tensor[3,3])
         
         self.Stensor = inv(self.tensor)
-        struct = pmg.Structure.from_file(filepath + "POSCAR")
+        struct = pmg.core.Structure.from_file(filepath + "POSCAR")
         self.density = struct.density * 1e3                              #kg/m^3
         B_v = ((self.tensor[0,0] + self.tensor[1,1] + self.tensor[2,2]) + 2 * (self.tensor[0,1] + self.tensor[1,2] + self.tensor[2,0])) / 9
         G_v = ((self.tensor[0,0] + self.tensor[1,1] + self.tensor[2,2]) - (self.tensor[0,1] + self.tensor[1,2] + self.tensor[2,0]) \

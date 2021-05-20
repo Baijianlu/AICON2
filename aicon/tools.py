@@ -44,7 +44,7 @@ def Generate_kpoints(struct, kppa):
     
     Parameters:
     ----------
-    struct: pmg.structure object
+    struct: pmg.core.structure object
     kppa: float
         The grid resolution in the reciprocal space, the unit is A-1. 
     '''
@@ -66,7 +66,7 @@ def Generate_kpoints(struct, kppa):
 def get_highsympath(filename):
     ''' Get the high symmetry path of phonon spectrum. '''
     
-    struct = pmg.Structure.from_file(filename)       
+    struct = pmg.core.Structure.from_file(filename)       
     finder = SpacegroupAnalyzer(struct)
     prims = finder.get_primitive_standard_structure()
     HKpath = HighSymmKpath(struct)
@@ -138,7 +138,7 @@ def get_sym_eq_kpoints(struct, kpoint, cartesian=False, tol=1e-2):
 def get_highsymweight(filename):
     ''' Get the multiplicity of the high symmetry path. '''
     
-    struct = pmg.Structure.from_file(filename)       
+    struct = pmg.core.Structure.from_file(filename)       
     HKpath = HighSymmKpath(struct)
     Keys = list()
     Coords = list()
@@ -412,7 +412,7 @@ def calc_MFPS(Elem_tabl):
     '''Calculate mass fluctuation phonon scattering parameter. '''
     
     tab_len  = len(Elem_tabl)
-    Mass = [pmg.Element[Elem_tabl[i]].atomic_mass for i in np.arange(tab_len)]
+    Mass = [pmg.core.Element[Elem_tabl[i]].atomic_mass for i in np.arange(tab_len)]
     MassSum = np.sum(Mass)
     MFPS = 0.0
     

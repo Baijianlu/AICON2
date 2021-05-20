@@ -5,7 +5,7 @@ Created on Mon Jun 15 11:20:45 2020
 @author: Tao.Fan
 """
 import numpy as np
-from pymatgen import Structure
+from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from aicon.myworkflow import wf_electron_conductivity
 from fireworks import LaunchPad
