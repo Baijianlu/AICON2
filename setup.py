@@ -5,10 +5,6 @@ Created on Sat Mar 23 10:09:30 2019
 @author: Tao.Fan
 This script used to setup the scripts
 """
-import os
-import sys
-import numpy
-
 try:
     from setuptools import setup, Extension
     use_setuptools = True
@@ -18,8 +14,8 @@ except ImportError:
     use_setuptools = False
     print("distutils is used.")
     
-extension_aicon = Extension('aicon._extern', sources = [])
-ext_modules_aicon = [extension_aicon]
+#extension_aicon = Extension('aicon._extern', sources = [])
+#ext_modules_aicon = [extension_aicon]
 packages_aicon = ['aicon']
 scripts_aicon = ['Scripts/AICON']
 
@@ -39,28 +35,39 @@ if __name__ == '__main__':
         raise
 
     version_number = ".".join(["%d" % n for n in version_nums])
+    
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
 
     if use_setuptools:
-        setup(name='aicon',
-              version=version_number,
-              description='This is the aicon module.',
-              author='Tao Fan',
-              author_email='Tao.Fan@skoltech.ru',
-              url='https://github.com/Baijianlu/AICON2.git',
-              packages=packages_aicon,
-              install_requires=['numpy', 'scipy', 'pymatgen', 'pandas'],
-              provides=['aicon'],
-              scripts=scripts_aicon,
-              ext_modules=ext_modules_aicon)
-    else:
-        setup(name='aicon',
+        setup(name='AICON',
               version=version_number,
               description='This is the AICON module.',
               author='Tao Fan',
               author_email='Tao.Fan@skoltech.ru',
               url='https://github.com/Baijianlu/AICON2.git',
+              long_description=long_description,
+              long_description_content_type="text/markdown",
               packages=packages_aicon,
-              requires=['numpy', 'scipy', 'pymatgen', 'pandas'],
+              install_requires=['numpy>=1.17.2', 'scipy>=1.3.1', 'pymatgen>=2020.4.2', 'atomate>=0.9.4', 'pymongo>=3.10.1'],
               provides=['aicon'],
               scripts=scripts_aicon,
-              ext_modules=ext_modules_aicon)
+              classifiers=[
+                  "Programming Language :: Python :: 3",
+                  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+                  "Operating System :: OS Independent",
+              ],
+              python_requires=">=3.6")
+    else:
+        setup(name='AICON',
+              version=version_number,
+              description='This is the AICON module.',
+              author='Tao Fan',
+              author_email='Tao.Fan@skoltech.ru',
+              url='https://github.com/Baijianlu/AICON2.git',
+              long_description=long_description,
+              long_description_content_type="text/markdown",
+              packages=packages_aicon,
+              requires=['numpy', 'scipy', 'pymatgen', 'atomate', 'pymongo'],
+              provides=['aicon'],
+              scripts=scripts_aicon)

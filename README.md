@@ -10,7 +10,11 @@ AICON2 has a DOI:10.1016/j.cpc.2021.108027, you can cite this code like this:
 AICON2 is a Python module and requires Python version 3.5 or higher. The dependent Python libraries include [NumPy](http://www.numpy.org/), [SciPy](https://www.scipy.org/), [spglib](https://atztogo.github.io/spglib/), [pymatgen](http://pymatgen.org/index.html). If you want to use automatic workflow management tools, [atomate](https://atomate.org/) and [FireWorks](https://materialsproject.github.io/fireworks/) should also be installed.  All of them can be easily obtained from the [Python Package Index](https://pypi.python.org/pypi) (PyPI), using tools such as pip. They may also be bundled with Python distributions aimed at scientists, like [Anaconda](https://anaconda.org/), and with a number of Linux distributions. Here we recommend to use Anaconda so that dependencies should be resolved automatically.
 
 ## Compiling and install AICON2
-Users installing from source must install the dependencies first and then run:
+Install from pip:
+
+    $ pip install AICON
+
+Or, users installing from source must install the dependencies first and then run:
 
     $ python setup.py install
     
