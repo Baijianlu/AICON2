@@ -113,6 +113,6 @@ if __name__ == '__main__':
 #    launchpad.reset('', require_password=False)
     
     Temp = np.arange(200, 750, 50) 
-    workflow = wf_electron_conductivity(struct, vasp_input_set_relax=custom_settings_relax, vasp_input_set_fixvol_relax=custom_settings_fixvol_relax, vasp_input_set_static=custom_settings_static, vasp_input_set_band=custom_settings_band, vasp_input_set_diel=custom_settings_diel, vasp_input_set_elastic=custom_settings_elastic, vasp_kpoint_set=KPOINT, vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", mode="doping", Temp=Temp, Doping=[1.0e+18, 1.0e+19], strain=[0.001,0.002], ifSB=True) 
+    workflow = wf_electron_conductivity(struct, vasp_input_set_relax=custom_settings_relax, vasp_input_set_fixvol_relax=custom_settings_fixvol_relax, vasp_input_set_static=custom_settings_static, vasp_input_set_band=custom_settings_band, vasp_input_set_diel=custom_settings_diel, vasp_input_set_elastic=custom_settings_elastic, vasp_kpoint_set=KPOINT, vasp_cmd=">>vasp_cmd<<", db_file=">>db_file<<", mode="doping", Temp=Temp, Doping=[1.0e+18, 1.0e+19], strain=[0.001,-0.001], ifSB=True) 
     # store workflow and launch it locally
     launchpad.add_wf(workflow)
