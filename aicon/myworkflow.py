@@ -23,7 +23,7 @@
 from datetime import datetime
 from pymatgen.io.vasp.sets import MPRelaxSet, MPStaticSet
 from fireworks import Firework, Workflow
-from atomate.vasp.powerups import add_namefile
+from atomate.common.powerups import add_namefile
 from aicon.myfireworks import MyOptimizeFW, MyStaticFW, MyNonSCFFW, MyDFPTFW, \
     MyElasticFW, MyEffectivemassFW, CalElecCondFW, MyPhononFW, CalPhonCondFW
 
